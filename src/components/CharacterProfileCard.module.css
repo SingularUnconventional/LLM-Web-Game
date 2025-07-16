@@ -1,0 +1,28 @@
+.profile-card-container {
+  background-color: var(--color-background-light);
+  border-radius: 15px;
+  padding: 25px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  margin-top: 20px;
+  width: 100%;
+  max-width: 450px;
+  color: var(--color-text-dark);
+}
+
+.profile-card-container h2 {
+  color: var(--color-primary);
+  font-size: 1.8em;
+  margin-bottom: 20px;
+  text-align: center;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.profile-content p {
+  font-size: 0.95em;
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.profile-content strong {
+  color: var(--color-secondary);
+}

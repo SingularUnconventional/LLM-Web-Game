@@ -1,0 +1,44 @@
+.emotion-log-container {
+  background-color: var(--color-background-light);
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  margin-top: 20px;
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.emotion-log-container h2 {
+  color: var(--color-primary);
+  font-size: 1.5em;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.log-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.log-entry {
+  background-color: #f0f8ff; /* Light blue for log entries */
+  border-radius: 10px;
+  padding: 10px 15px;
+  border: 1px solid var(--color-secondary);
+}
+
+.log-timestamp {
+  font-size: 0.8em;
+  color: #888;
+  margin-bottom: 5px;
+  display: block;
+  text-align: right;
+}
+
+.log-message {
+  font-size: 0.95em;
+  color: var(--color-text-dark);
+  margin: 0;
+}
