@@ -1,29 +1,41 @@
-import { Request, Response } from 'express';
 import express from 'express';
-const cors = require('cors');
+import cors from 'cors';
 import { config } from 'dotenv';
-import psychologyRoutes from './routes/psychology';
-import chatRoutes from './routes/chat';
-import imagesRoutes from './routes/images';
+config(); // Ensure dotenv is configured as early as possible
+
 import connectDB from './config/db';
+import errorHandler from './middleware/errorMiddleware';
+
+// Route imports
+import authRoutes from './routes/auth';
+import gameRoutes from './routes/game';
+import characterRoutes from './routes/character';
+import counselingRoutes from './routes/counseling';
+import psychologyRoutes from './routes/psychology';
 
 config();
-
-connectDB(); // Connect to MongoDB
+connectDB();
 
 const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/game', gameRoutes);
+app.use('/api/character', characterRoutes);
+app.use('/api/counseling', counselingRoutes);
 app.use('/api/psychology', psychologyRoutes);
-app.use('/api/chat', chatRoutes);
-app.use('/api/images', imagesRoutes);
 
-app.get('/api', (req: Request, res: Response) => {
+app.get('/api', (req, res) => {
   res.send('Hello from the server!');
 });
+
+// Error Handler Middleware
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

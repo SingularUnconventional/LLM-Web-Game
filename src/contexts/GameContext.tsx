@@ -1,15 +1,13 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer, ReactNode, Dispatch } from 'react';
 
+// --- Type Definitions ---
+// It's good practice to have these in a separate types file (e.g., src/types/game.ts)
+// if they are shared across different parts of the application.
 interface CharacterPersona {
   name: string;
   appearance_description: string;
   core_concern: string;
   personality_traits: string[];
-  dialogue_style_guidelines?: {
-    sentence_length?: string;
-    emoji_usage?: string;
-    tone?: string;
-  };
   dialogue_style: string;
   primary_fear: string;
   interpersonal_boundary: string;
@@ -23,16 +21,16 @@ interface DialogueEntry {
   sender: 'user' | 'character';
   message: string;
   timestamp: Date;
-  characterEmotionState?: { // Optional, as it's a snapshot
+  characterEmotionState?: {
     currentEmotionState?: string;
     anxiety_level?: number;
     trust_level?: number;
   };
 }
 
-interface GameSessionData {
+export interface GameSessionData {
   _id: string;
-  userId: string; // Changed from Types.ObjectId
+  userId: string;
   characterName: string;
   characterCreationTime: Date;
   characterImageContentId: string;
@@ -43,62 +41,67 @@ interface GameSessionData {
     anxiety_level?: number;
     trust_level?: number;
   };
-  longTermMemory: Array<{
-    type: string;
-    content: string;
-    timestamp: Date;
-  }>;
-  dayNightCycle: {
-    currentDay: number;
-    isNight: boolean;
-    lastActionSummary?: string;
-  };
   isResolved: boolean;
-  sessionCompletionTime?: Date;
 }
 
+// --- Reducer Actions ---
+type Action =
+  | { type: 'SET_SESSION'; payload: GameSessionData | null }
+  | { type: 'ADD_DIALOGUE_ENTRY'; payload: DialogueEntry }
+  | { type: 'UPDATE_EMOTION'; payload: string }
+  | { type: 'UPDATE_CONVERSATION_STATUS'; payload: { isResolved: boolean } };
+
+// --- Reducer Function ---
+const gameReducer = (state: GameSessionData | null, action: Action): GameSessionData | null => {
+  switch (action.type) {
+    case 'SET_SESSION':
+      return action.payload;
+    case 'ADD_DIALOGUE_ENTRY':
+      if (!state) return null;
+      return {
+        ...state,
+        dialogueHistory: [...state.dialogueHistory, action.payload],
+      };
+    case 'UPDATE_EMOTION':
+      if (!state) return null;
+      return {
+        ...state,
+        characterEmotionProgress: {
+          ...state.characterEmotionProgress,
+          currentEmotionState: action.payload,
+        },
+      };
+    case 'UPDATE_CONVERSATION_STATUS':
+      if (!state) return null;
+      return {
+        ...state,
+        isResolved: action.payload.isResolved,
+      };
+    default:
+      return state;
+  }
+};
+
+// --- Context Definition ---
 interface GameContextType {
   gameSession: GameSessionData | null;
-  setGameSession: (session: GameSessionData | null) => void;
-  addDialogueEntry: (entry: DialogueEntry) => void;
-  updateCharacterEmotion: (newEmotion: string) => void; // New function to update emotion
+  dispatch: Dispatch<Action>;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
+// --- Provider Component ---
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [gameSession, setGameSession] = useState<GameSessionData | null>(null);
-
-  const addDialogueEntry = (entry: DialogueEntry) => {
-    setGameSession(prevSession => {
-      if (!prevSession) return null;
-      return {
-        ...prevSession,
-        dialogueHistory: [...prevSession.dialogueHistory, entry]
-      };
-    });
-  };
-
-  const updateCharacterEmotion = (newEmotion: string) => {
-    setGameSession(prevSession => {
-      if (!prevSession) return null;
-      return {
-        ...prevSession,
-        characterEmotionProgress: {
-          ...prevSession.characterEmotionProgress,
-          currentEmotionState: newEmotion,
-        },
-      };
-    });
-  };
+  const [gameSession, dispatch] = useReducer(gameReducer, null);
 
   return (
-    <GameContext.Provider value={{ gameSession, setGameSession, addDialogueEntry, updateCharacterEmotion }}>
+    <GameContext.Provider value={{ gameSession, dispatch }}>
       {children}
     </GameContext.Provider>
   );
 };
 
+// --- Custom Hook ---
 export const useGame = () => {
   const context = useContext(GameContext);
   if (context === undefined) {

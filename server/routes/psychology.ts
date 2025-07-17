@@ -1,8 +1,10 @@
-import { Router } from 'express';
-import psychologyController from '../controllers/psychologyController';
+import express from 'express';
+import { authMiddleware } from '../middleware/authMiddleware';
+import { submitPsychologyAnswers } from '../controllers/psychologyController';
 
-const router = Router();
+const router = express.Router();
 
-router.post('/complete', psychologyController.completeTest);
+// 심리 질문 답변 제출
+router.post('/answers', authMiddleware, submitPsychologyAnswers);
 
 export default router;

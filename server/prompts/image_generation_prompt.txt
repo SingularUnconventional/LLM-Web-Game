@@ -1,0 +1,6 @@
+A simple, clean, close-up portrait of {{character_description}}.
+The character should be facing forward, like a profile picture.
+The background must be a solid, plain white.
+The art style should be a beautiful, simple, modern fairy-tale illustration with a gentle and dreamy feeling.
+Do not include any text or borders.
+The image should be focused on the character's face and express its core emotion.

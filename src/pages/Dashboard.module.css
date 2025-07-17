@@ -1,0 +1,118 @@
+/* src/pages/Dashboard.module.css */
+.layoutContainer {
+  min-height: 100vh;
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 40px;
+  background: rgba(18, 18, 18, 0.8);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(100, 100, 224, 0.2);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header h1 {
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: #fff;
+}
+
+.userActions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.userActions span {
+  font-weight: 500;
+}
+
+.logoutButton {
+  background: transparent;
+  border: 1px solid #7f5af0;
+  color: #7f5af0;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.logoutButton:hover {
+  background: #7f5af0;
+  color: #fff;
+}
+
+.mainContent {
+  padding: 40px;
+}
+
+.welcomeBox {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.welcomeBox h2 {
+  font-size: 2.8rem;
+  font-weight: 300;
+  margin-bottom: 10px;
+}
+
+.welcomeBox p {
+  font-size: 1.2rem;
+  color: #a0a0c0;
+}
+
+.actionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.actionCard {
+  background: rgba(23, 23, 30, 0.85);
+  border: 1px solid rgba(100, 100, 224, 0.2);
+  border-radius: 12px;
+  padding: 30px;
+  text-decoration: none;
+  color: #e0e0e0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.actionCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(127, 90, 240, 0.3);
+  border-color: #7f5af0;
+}
+
+.actionCard h3 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  color: #fff;
+}
+
+.actionCard p {
+  font-size: 1rem;
+  color: #a0a0c0;
+  line-height: 1.6;
+}
+
+.cardStatus {
+  position: absolute;
+  bottom: 15px;
+  right: 20px;
+  font-size: 0.9rem;
+  color: #7f5af0;
+  font-weight: bold;
+}

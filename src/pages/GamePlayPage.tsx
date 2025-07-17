@@ -1,34 +1,37 @@
-import React from 'react';
-import CharacterDisplay from '@/components/CharacterDisplay/CharacterDisplay';
-import ChatInterface from '@/components/ChatInterface/ChatInterface';
-import EmotionLog from '@/components/EmotionLog';
-import CharacterProfileCard from '@/components/CharacterProfileCard';
-import { useGame } from '@/contexts/GameContext';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import styles from './GamePlayPage.module.css';
+import { useGame } from '../contexts/GameContext';
+import CharacterDisplay from '../components/CharacterDisplay/CharacterDisplay';
+import ChatInterface from '../components/ChatInterface/ChatInterface';
+import CharacterProfileCard from '../components/CharacterProfileCard';
+import EmotionLog from '../components/EmotionLog';
+import styles from './GamePlayLayout.module.css'; // Using a new, non-conflicting style module
 
-const GamePlayPage = () => {
+const GamePlayPage: React.FC = () => {
   const { gameSession } = useGame();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!gameSession) {
+      console.log('No game session found, redirecting to home.');
+      navigate('/');
+    }
+  }, [gameSession, navigate]);
+
   if (!gameSession) {
-    // If no game session, redirect to home or show a message
-    navigate('/');
-    return null;
+    return null; 
   }
 
   return (
-    <div className={styles.gamePlayPageContainer}>
-      <h1>{gameSession.characterPersona.name}의 꿈</h1>
-      <p>현재 감정: {gameSession.characterEmotionProgress?.currentEmotionState || '불러오는 중...'}</p>
-      <div className={styles.dayNightCycle}>
-        <p>Day: {gameSession.dayNightCycle.currentDay}</p>
-        <p>{gameSession.dayNightCycle.isNight ? 'Night' : 'Day'}</p>
+    <div className={styles.gameContainer}>
+      <div className={styles.leftPanel}>
+        <CharacterDisplay />
+        <ChatInterface />
       </div>
-      <CharacterDisplay />
-      <ChatInterface />
-      <CharacterProfileCard />
-      <EmotionLog />
+      <div className={styles.rightPanel}>
+        <CharacterProfileCard />
+        <EmotionLog />
+      </div>
     </div>
   );
 };

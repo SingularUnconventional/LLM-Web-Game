@@ -1,44 +1,62 @@
-.emotion-log-container {
-  background-color: var(--color-background-light);
-  border-radius: 15px;
-  padding: 20px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-  margin-top: 20px;
-  width: 100%;
-  max-height: 300px;
+.logContainer {
+  background: rgba(24, 24, 24, 0.8);
+  backdrop-filter: blur(5px);
+  border-radius: 12px;
+  padding: 25px;
+  border: 1px solid rgba(100, 100, 224, 0.2);
+}
+
+.logContainer h3 {
+  color: #a0a0c0;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #4a4a8a;
+  padding-bottom: 5px;
+}
+
+.logList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px; /* Limit height */
   overflow-y: auto;
 }
 
-.emotion-log-container h2 {
-  color: var(--color-primary);
-  font-size: 1.5em;
-  margin-bottom: 15px;
-  text-align: center;
+/* Custom scrollbar */
+.logList::-webkit-scrollbar {
+  width: 4px;
+}
+.logList::-webkit-scrollbar-track {
+  background: transparent;
+}
+.logList::-webkit-scrollbar-thumb {
+  background-color: rgba(127, 90, 240, 0.5);
+  border-radius: 2px;
 }
 
-.log-entries {
+.logItem {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  justify-content: space-between;
+  padding: 10px 5px;
+  border-bottom: 1px solid rgba(74, 74, 138, 0.3);
 }
 
-.log-entry {
-  background-color: #f0f8ff; /* Light blue for log entries */
-  border-radius: 10px;
-  padding: 10px 15px;
-  border: 1px solid var(--color-secondary);
+.logItem:last-child {
+  border-bottom: none;
 }
 
-.log-timestamp {
-  font-size: 0.8em;
-  color: #888;
-  margin-bottom: 5px;
-  display: block;
-  text-align: right;
+.logMessage {
+  font-size: 0.9rem;
+  color: #e0e0e0;
+  flex-grow: 1;
 }
 
-.log-message {
-  font-size: 0.95em;
-  color: var(--color-text-dark);
-  margin: 0;
+.logEmotion {
+  font-size: 0.9rem;
+  color: #7f5af0;
+  font-weight: 500;
+  white-space: nowrap;
+  margin-left: 15px;
 }

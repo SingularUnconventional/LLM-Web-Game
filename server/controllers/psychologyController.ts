@@ -1,55 +1,17 @@
 import { Request, Response } from 'express';
-import geminiService from '../services/geminiService';
-import GameSession from '../models/GameSession';
-import User from '../models/User';
+import asyncHandler from '../utils/asyncHandler';
 
-class PsychologyController {
-  async completeTest(req: Request, res: Response) {
-    try {
-      const testResult = req.body;
-      // TODO: Add validation for testResult
-
-      const characterData = await geminiService.generateCharacterPersonaAndImage(testResult);
-      console.log('characterData received from geminiService:', JSON.stringify(characterData, null, 2));
-      console.log('characterData.characterWorld:', characterData.characterWorld);
-      console.log('characterData.characterWorld.setting_summary:', characterData.characterWorld?.setting_summary);
-      console.log('characterData.characterWorld.absent_concepts:', characterData.characterWorld?.absent_concepts);
-      console.log('characterData.initial_long_term_memory:', characterData.initial_long_term_memory);
-      
-      // For now, create a dummy user or find an existing one
-      let user = await User.findOne({ username: 'testuser' });
-      if (!user) {
-        user = await User.create({ username: 'testuser' });
-      }
-
-      
-
-      const newGameSession = new GameSession({
-        userId: user._id,
-        characterName: characterData.persona.name, // Added
-        characterCreationTime: new Date(), // Added
-        characterPersona: {
-          ...characterData.persona,
-          setting_summary: characterData.characterWorld?.setting_summary || 'A mysterious world setting',
-          absent_concepts: characterData.characterWorld?.absent_concepts || [],
-          initial_long_term_memory: characterData.initial_long_term_memory || [],
-        },
-        characterImageContentId: characterData.imageId,
-        dialogueHistory: [],
-        characterEmotionProgress: { currentEmotionState: 'neutral' }, // Initial emotion
-        longTermMemory: [],
-        dayNightCycle: { currentDay: 1, isNight: false },
-        isResolved: false,
-      });
-
-      await newGameSession.save();
-
-      res.status(201).json(newGameSession);
-    } catch (error) {
-      console.error('Error completing psychology test:', error);
-      res.status(500).json({ message: 'Failed to generate character.' });
-    }
-  }
-}
-
-export default new PsychologyController();
+// @desc    Submit answers for psychology questions
+// @route   POST /api/psychology/answers
+// @access  Private
+export const submitPsychologyAnswers = asyncHandler(async (req: Request, res: Response) => {
+  // 1. Get user and answers from request
+  // 2. Save answers to PsychologyAnswer model
+  // 3. (Async) Trigger the background process for night preparation:
+  //    - Call AI-6 to update player analysis and get next character core problem
+  //    - Call AI-7 to generate new character
+  //    - Call AI-8 to generate image, then pixelate it
+  //    - Save the new character to DB
+  // 4. Respond with success message immediately. The client will poll for readiness.
+  res.status(200).json({ message: 'Answers submitted. Preparing for the night.' });
+});

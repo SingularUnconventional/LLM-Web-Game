@@ -1,28 +1,61 @@
-.profile-card-container {
-  background-color: var(--color-background-light);
-  border-radius: 15px;
+.profileCard {
+  background: rgba(24, 24, 24, 0.8);
+  backdrop-filter: blur(5px);
+  border-radius: 12px;
   padding: 25px;
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-  margin-top: 20px;
-  width: 100%;
-  max-width: 450px;
-  color: var(--color-text-dark);
+  border: 1px solid rgba(100, 100, 224, 0.2);
 }
 
-.profile-card-container h2 {
-  color: var(--color-primary);
-  font-size: 1.8em;
-  margin-bottom: 20px;
+.header {
   text-align: center;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.05);
+  margin-bottom: 20px;
 }
 
-.profile-content p {
-  font-size: 0.95em;
-  margin-bottom: 8px;
-  line-height: 1.5;
+.name {
+  font-size: 1.8rem;
+  font-weight: 300;
+  color: #fff;
+  margin-bottom: 5px;
 }
 
-.profile-content strong {
-  color: var(--color-secondary);
+.emotion {
+  font-size: 1rem;
+  color: #7f5af0;
+  font-weight: 500;
+}
+
+.infoSection {
+  margin-bottom: 20px;
+}
+
+.infoSection h4 {
+  color: #a0a0c0;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #4a4a8a;
+  padding-bottom: 5px;
+}
+
+.infoSection p, .infoSection li {
+  font-size: 0.95rem;
+  color: #e0e0e0;
+  line-height: 1.6;
+}
+
+.traits {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.trait {
+  background: rgba(127, 90, 240, 0.2);
+  color: #c1b2f3;
+  padding: 5px 12px;
+  border-radius: 15px;
+  font-size: 0.85rem;
 }

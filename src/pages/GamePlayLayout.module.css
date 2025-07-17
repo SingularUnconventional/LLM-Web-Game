@@ -1,0 +1,30 @@
+.gameContainer {
+  display: flex;
+  gap: 30px;
+  height: calc(100vh - 80px); /* Full height minus MainLayout's padding */
+}
+
+.leftPanel {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(100, 100, 224, 0.1);
+}
+
+.rightPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto; /* Allow scrolling if content overflows */
+}
+
+/* Hide scrollbar for the right panel */
+.rightPanel::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}

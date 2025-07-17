@@ -1,0 +1,119 @@
+/* src/pages/PsychologyTestPage.module.css */
+.pageContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+.testContainer {
+  width: 100%;
+  max-width: 700px;
+  padding: 40px;
+  background: rgba(23, 23, 30, 0.85);
+  border-radius: 12px;
+  border: 1px solid rgba(100, 100, 224, 0.2);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.title {
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: 300;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #a0a0c0;
+  margin-bottom: 40px;
+}
+
+.questionCard {
+  margin-bottom: 30px;
+}
+
+.questionText {
+  font-size: 1.4rem;
+  margin-bottom: 25px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.optionButton {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid #4a4a8a;
+  color: #e0e0e0;
+  padding: 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 1rem;
+}
+
+.optionButton:hover {
+  background-color: #7f5af0;
+  border-color: #7f5af0;
+  transform: translateY(-3px);
+}
+
+.progressBarContainer {
+  height: 8px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 30px;
+}
+
+.progressBar {
+  height: 100%;
+  background-color: #7f5af0;
+  transition: width 0.5s ease-in-out;
+}
+
+.progressText {
+  text-align: center;
+  margin-top: 10px;
+  color: #aaa;
+}
+
+.submitButton {
+  display: block;
+  width: 100%;
+  margin-top: 30px;
+  background: #7f5af0;
+  color: #fff;
+  border: none;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.submitButton:hover:not(:disabled) {
+  background-color: #9d7ff3;
+  transform: translateY(-2px);
+}
+
+.submitButton:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #ff6b6b;
+  text-align: center;
+  margin-bottom: 15px;
+}
