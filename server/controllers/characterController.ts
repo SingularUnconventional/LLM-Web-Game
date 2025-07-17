@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import asyncHandler from '../utils/asyncHandler';
+import { asyncHandler } from '../utils/asyncHandler';
 
 // @desc    Get current game state
 // @route   GET /api/character/state

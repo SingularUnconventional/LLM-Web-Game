@@ -7,7 +7,7 @@ export interface ProtectedRequest extends Request {
   user?: IUser;
 }
 
-export const protect = asyncHandler(async (req: ProtectedRequest, res: Response, next: NextFunction) => {
+export const authMiddleware = asyncHandler(async (req: ProtectedRequest, res: Response, next: NextFunction) => {
   let token;
 
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {

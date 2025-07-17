@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import asyncHandler from '../utils/asyncHandler';
+import { asyncHandler } from '../utils/asyncHandler';
 
 // @desc    Start a new counseling session or get existing logs
 // @route   GET /api/counseling

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import asyncHandler from '../utils/asyncHandler';
+import { asyncHandler } from '../utils/asyncHandler';
 
 // @desc    Submit answers for psychology questions
 // @route   POST /api/psychology/answers
