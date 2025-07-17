@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
+import GameState from '../models/GameState';
+import CharacterCard from '../models/CharacterCard';
 import { asyncHandler } from '../utils/asyncHandler';
+import { ProtectedRequest } from '../middleware/authMiddleware'; // Added import
 
 const generateToken = (id: string) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'your_default_secret', {
@@ -38,7 +41,7 @@ export const registerUser = asyncHandler(async (req: Request, res: Response) => 
       _id: user.id,
       username: user.username,
       email: user.email,
-      token: generateToken(user._id.toString()),
+      token: generateToken(user.id),
     });
   } else {
     res.status(400);
@@ -60,7 +63,7 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
         _id: user.id,
         username: user.username,
         email: user.email,
-        token: generateToken(user._id.toString()),
+        token: generateToken(user.id),
       });
     } else {
       res.status(401);
@@ -70,3 +73,23 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
     next(error);
   }
 };
+
+// @desc    Get user status
+// @route   GET /api/auth/status
+// @access  Private
+export const getUserStatus = asyncHandler(async (req: ProtectedRequest, res: Response) => {
+  const user = await User.findById(req.user!.id); // Used ProtectedRequest and non-null assertion
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  const gameState = await GameState.findOne({ userId: req.user!.id }); // Used non-null assertion
+  const completedCardCount = await CharacterCard.countDocuments({ userId: req.user!.id }); // Used non-null assertion
+
+  res.status(200).json({
+    hasCompletedInitialCounseling: !!user.playerAnalysis,
+    activeCharacterId: gameState?.activeCharacterId || null,
+    completedCardCount,
+  });
+});

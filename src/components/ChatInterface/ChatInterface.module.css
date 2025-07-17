@@ -5,6 +5,9 @@
   flex-direction: column;
   height: 100%;
   padding: 20px;
+  background-color: var(--color-background-light); /* Use theme variable */
+  color: var(--color-text-dark); /* Use theme variable */
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 .messageList {
@@ -21,7 +24,7 @@
   background: transparent;
 }
 .messageList::-webkit-scrollbar-thumb {
-  background-color: rgba(127, 90, 240, 0.5);
+  background-color: var(--color-primary); /* Use theme variable */
   border-radius: 3px;
 }
 
@@ -34,22 +37,22 @@
 }
 
 .messageBubble.user {
-  background: #7f5af0;
-  color: #fff;
+  background: var(--color-primary); /* Use theme variable */
+  color: var(--color-text-light); /* Use theme variable */
   border-bottom-right-radius: 5px;
   margin-left: auto;
 }
 
 .messageBubble.character {
-  background: #2d2d3a;
-  color: #e0e0e0;
+  background: var(--color-secondary); /* Use theme variable */
+  color: var(--color-text-dark); /* Use theme variable */
   border-bottom-left-radius: 5px;
   margin-right: auto;
 }
 
 .timestamp {
   font-size: 0.75rem;
-  color: #999;
+  color: var(--color-text-dark); /* Use theme variable */
   display: block;
   margin-top: 5px;
 }
@@ -62,7 +65,7 @@
 .typingIndicator span {
   width: 8px;
   height: 8px;
-  background-color: #a0a0c0;
+  background-color: var(--color-accent); /* Use theme variable */
   border-radius: 50%;
   animation: bounce 1.4s infinite ease-in-out both;
 }
@@ -79,27 +82,32 @@
   gap: 10px;
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid rgba(100, 100, 224, 0.2);
+  border-top: 1px solid var(--color-border); /* Use theme variable */
 }
 
-.messageInput input {
+.inputField {
   flex-grow: 1;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid #4a4a8a;
+  background: var(--color-background-dark); /* Use theme variable */
+  border: 1px solid var(--color-border); /* Use theme variable */
   border-radius: 25px;
   padding: 12px 20px;
-  color: #e0e0e0;
+  color: var(--color-text-light); /* Use theme variable */
   font-size: 1rem;
 }
 
-.messageInput input:focus {
-  outline: none;
-  border-color: #7f5af0;
+.inputField::placeholder {
+  color: var(--color-text-light); /* Use theme variable */
+  opacity: 0.7;
 }
 
-.messageInput button {
-  background: #7f5af0;
-  color: #fff;
+.inputField:focus {
+  outline: none;
+  border-color: var(--color-primary); /* Use theme variable */
+}
+
+.sendButton {
+  background: var(--color-button-bg); /* Use theme variable */
+  color: var(--color-button-text); /* Use theme variable */
   border: none;
   padding: 0 25px;
   border-radius: 25px;
@@ -107,11 +115,12 @@
   transition: background-color 0.3s;
 }
 
-.messageInput button:hover:not(:disabled) {
-  background-color: #9d7ff3;
+.sendButton:hover:not(:disabled) {
+  background-color: var(--color-accent); /* Use theme variable */
+  color: var(--color-text-dark); /* Use theme variable */
 }
 
-.messageInput button:disabled {
-  background-color: #555;
+.sendButton:disabled {
+  background-color: var(--color-border); /* Use theme variable */
   cursor: not-allowed;
 }

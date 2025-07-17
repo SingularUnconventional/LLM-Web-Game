@@ -1,55 +1,13 @@
 import React, { createContext, useContext, useReducer, ReactNode, Dispatch } from 'react';
-
-// --- Type Definitions ---
-// It's good practice to have these in a separate types file (e.g., src/types/game.ts)
-// if they are shared across different parts of the application.
-interface CharacterPersona {
-  name: string;
-  appearance_description: string;
-  core_concern: string;
-  personality_traits: string[];
-  dialogue_style: string;
-  primary_fear: string;
-  interpersonal_boundary: string;
-  behavior_when_alone: string;
-  setting_summary: string;
-  absent_concepts: string[];
-  initial_long_term_memory: string[];
-}
-
-interface DialogueEntry {
-  sender: 'user' | 'character';
-  message: string;
-  timestamp: Date;
-  characterEmotionState?: {
-    currentEmotionState?: string;
-    anxiety_level?: number;
-    trust_level?: number;
-  };
-}
-
-export interface GameSessionData {
-  _id: string;
-  userId: string;
-  characterName: string;
-  characterCreationTime: Date;
-  characterImageContentId: string;
-  characterPersona: CharacterPersona;
-  dialogueHistory: DialogueEntry[];
-  characterEmotionProgress: {
-    currentEmotionState: string;
-    anxiety_level?: number;
-    trust_level?: number;
-  };
-  isResolved: boolean;
-}
+import { GameSessionData, CharacterPersona, DialogueEntry } from '../types/api';
 
 // --- Reducer Actions ---
 type Action =
   | { type: 'SET_SESSION'; payload: GameSessionData | null }
   | { type: 'ADD_DIALOGUE_ENTRY'; payload: DialogueEntry }
   | { type: 'UPDATE_EMOTION'; payload: string }
-  | { type: 'UPDATE_CONVERSATION_STATUS'; payload: { isResolved: boolean } };
+  | { type: 'UPDATE_CONVERSATION_STATUS'; payload: { isResolved: boolean } }
+  | { type: 'SET_TIME_OF_DAY'; payload: 'day' | 'night' }; // Added for Day/Night theme
 
 // --- Reducer Function ---
 const gameReducer = (state: GameSessionData | null, action: Action): GameSessionData | null => {
@@ -77,6 +35,12 @@ const gameReducer = (state: GameSessionData | null, action: Action): GameSession
         ...state,
         isResolved: action.payload.isResolved,
       };
+    case 'SET_TIME_OF_DAY':
+      if (!state) return null;
+      return {
+        ...state,
+        timeOfDay: action.payload,
+      };
     default:
       return state;
   }
@@ -93,6 +57,19 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 // --- Provider Component ---
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [gameSession, dispatch] = useReducer(gameReducer, null);
+
+  // Initial state for timeOfDay. This should ideally come from the backend GameState.
+  // For now, we'll set a default and expect it to be updated by backend data.
+  React.useEffect(() => {
+    if (!gameSession) {
+      dispatch({ type: 'SET_SESSION', payload: { 
+        _id: '', userId: '', characterName: '', characterCreationTime: new Date(), 
+        characterImageContentId: '', characterPersona: {} as CharacterPersona, 
+        dialogueHistory: [], characterEmotionProgress: { currentEmotionState: '' }, 
+        isResolved: false, timeOfDay: 'day', currentPhase: '' // Default to day
+      } as GameSessionData });
+    }
+  }, [gameSession]);
 
   return (
     <GameContext.Provider value={{ gameSession, dispatch }}>

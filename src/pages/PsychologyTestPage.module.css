@@ -1,119 +1,110 @@
-/* src/pages/PsychologyTestPage.module.css */
-.pageContainer {
+.psychologyTestPage {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  min-height: 100vh;
-  background-color: #121212;
-  color: #e0e0e0;
-  font-family: 'Noto Sans KR', sans-serif;
-}
-
-.testContainer {
+  justify-content: center;
+  padding: 20px;
   width: 100%;
-  max-width: 700px;
-  padding: 40px;
-  background: rgba(23, 23, 30, 0.85);
-  border-radius: 12px;
-  border: 1px solid rgba(100, 100, 224, 0.2);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  max-width: 600px;
+  margin: auto;
+  background-color: var(--color-background-light);
+  color: var(--color-text-dark);
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
-.title {
-  text-align: center;
-  font-size: 2.2rem;
-  font-weight: 300;
-  color: #fff;
-  margin-bottom: 10px;
-}
-
-.subtitle {
-  text-align: center;
-  color: #a0a0c0;
-  margin-bottom: 40px;
-}
-
-.questionCard {
+.questionTitle {
+  font-size: 2em;
+  color: var(--color-primary);
   margin-bottom: 30px;
+  text-align: center;
+}
+
+.questionContainer {
+  background-color: var(--color-secondary);
+  padding: 30px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  width: 100%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 .questionText {
-  font-size: 1.4rem;
-  margin-bottom: 25px;
+  font-size: 1.3em;
+  font-weight: bold;
+  color: var(--color-text-light);
+  margin-bottom: 20px;
   text-align: center;
-  line-height: 1.6;
 }
 
-.options {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.choicesContainer {
+  display: flex;
+  flex-direction: column;
   gap: 15px;
 }
 
-.optionButton {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid #4a4a8a;
-  color: #e0e0e0;
-  padding: 20px;
+.choiceLabel {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-background-dark);
+  color: var(--color-text-light);
+  padding: 15px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
-.optionButton:hover {
-  background-color: #7f5af0;
-  border-color: #7f5af0;
+.choiceLabel:hover {
+  background-color: var(--color-primary);
   transform: translateY(-3px);
 }
 
-.progressBarContainer {
-  height: 8px;
-  background-color: rgba(0, 0, 0, 0.3);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-top: 30px;
+.choiceInput {
+  margin-right: 15px;
+  transform: scale(1.2);
+  accent-color: var(--color-accent); /* Custom color for radio button */
 }
 
-.progressBar {
-  height: 100%;
-  background-color: #7f5af0;
-  transition: width 0.5s ease-in-out;
-}
-
-.progressText {
-  text-align: center;
-  margin-top: 10px;
-  color: #aaa;
-}
-
-.submitButton {
-  display: block;
+.navigationButtons {
+  display: flex;
+  justify-content: space-between;
   width: 100%;
-  margin-top: 30px;
-  background: #7f5af0;
-  color: #fff;
+  margin-top: 20px;
+}
+
+.navButton, .submitButton {
+  padding: 12px 25px;
   border: none;
-  padding: 15px;
   border-radius: 8px;
-  font-size: 1.1rem;
-  font-weight: bold;
+  font-size: 1.1em;
   cursor: pointer;
-  transition: background-color 0.3s, transform 0.2s;
+  transition: background-color 0.3s ease, opacity 0.3s ease;
 }
 
-.submitButton:hover:not(:disabled) {
-  background-color: #9d7ff3;
-  transform: translateY(-2px);
+.navButton {
+  background-color: var(--color-button-bg);
+  color: var(--color-button-text);
 }
 
-.submitButton:disabled {
-  background-color: #555;
+.navButton:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-.error {
-  color: #ff6b6b;
-  text-align: center;
-  margin-bottom: 15px;
+.submitButton {
+  background-color: var(--color-accent);
+  color: var(--color-text-dark);
+  font-weight: bold;
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.errorText {
+  color: #e74c3c; /* Red for errors */
+  margin-top: 15px;
+  font-weight: bold;
 }

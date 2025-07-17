@@ -7,8 +7,8 @@ export interface ICharacter extends Document {
   problem: string;
   personality: string;
   initialDialogue: string;
-  originalImageUrl: string;
-  pixelatedImageUrl: string;
+  originalImageUrl?: string;
+  pixelatedImageUrl?: string;
   isFixed: boolean;
   isFinalPersona: boolean;
   createdAt: Date;

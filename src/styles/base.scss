@@ -21,6 +21,20 @@
   --color-border: #D3D3D3; // Light Gray
 }
 
+// Day/Night Theme Variables
+[data-theme='night'] {
+  --color-primary: #4A4A6A; // Darker Blue/Purple
+  --color-secondary: #6A7B9F; // Muted Blue
+  --color-accent: #B0C4DE; // Light Steel Blue
+  --color-text-dark: #E0E0E0; // Light Gray for text
+  --color-text-light: #2C3E50; // Dark Blue for light text areas
+  --color-background-light: #2C3E50; // Dark Blue background
+  --color-background-dark: #1A242F; // Even darker blue
+  --color-button-bg: var(--color-secondary);
+  --color-button-text: var(--color-text-light);
+  --color-border: #5A6A7A; // Darker border
+}
+
 // Base Body Styles
 body {
   font-family: 'Noto Sans KR', 'Pretendard', sans-serif; // Prioritize Pretendard if available, then Noto Sans KR

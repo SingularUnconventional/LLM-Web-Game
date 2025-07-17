@@ -4,16 +4,14 @@ export interface IPsychologyAnswer extends Document {
   userId: Types.ObjectId;
   question: string;
   answer: string;
-  answeredAt: Date;
-  gameDay: number;
+  createdAt: Date;
 }
 
 const PsychologyAnswerSchema: Schema = new Schema({
   userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   question: { type: String, required: true },
   answer: { type: String, required: true },
-  answeredAt: { type: Date, default: Date.now },
-  gameDay: { type: Number, required: true },
+  createdAt: { type: Date, default: Date.now },
 });
 
 export default mongoose.model<IPsychologyAnswer>('PsychologyAnswer', PsychologyAnswerSchema);

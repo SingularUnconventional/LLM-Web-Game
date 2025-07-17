@@ -1,53 +1,41 @@
-import React, { useEffect, useState } from 'react';
-import styles from './PersonaCollectionPage.module.css';
+import React, { useState, useEffect } from 'react';
 import { api } from '../utils/api';
+import { ICharacterCard } from '../types/api';
 import CompletedCharacterCard from '../components/CompletedCharacterCard';
-import { CompletedSession } from '../types/api';
+import styles from './PersonaCollectionPage.module.css';
 
 const PersonaCollectionPage: React.FC = () => {
-  const [completedSessions, setCompletedSessions] = useState<CompletedSession[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [cards, setCards] = useState<ICharacterCard[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchCompletedSessions = async () => {
+    const fetchCards = async () => {
       try {
-        const response = await api.get<CompletedSession[]>('/sessions/completed');
-        setCompletedSessions(response);
-      } catch (err) {
-        console.error('Failed to fetch completed sessions:', err);
-        setError('Failed to load completed sessions.');
-      }
-      finally {
-        setLoading(false);
+        const fetchedCards = await api.character.getCards();
+        setCards(fetchedCards);
+      } catch (error) {
+        console.error("Failed to fetch character cards:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
-
-    fetchCompletedSessions();
+    fetchCards();
   }, []);
 
-  if (loading) {
-    return <div className={styles.personaCollectionPageContainer}>로딩 중...</div>;
-  }
-
-  if (error) {
-    return <div className={styles.personaCollectionPageContainer}><p style={{ color: 'red' }}>{error}</p></div>;
+  if (isLoading) {
+    return <div className={styles.loading}>페르소나 컬렉션을 불러오는 중...</div>;
   }
 
   return (
-    <div className={styles.personaCollectionPageContainer}>
-      <h1>나의 꿈 목록</h1>
-      {completedSessions.length === 0 ? (
-        <p>아직 완료된 꿈이 없습니다. 새로운 꿈을 시작해보세요!</p>
+    <div className={styles.container}>
+      <h1 className={styles.title}>페르소나 컬렉션</h1>
+      <p className={styles.subtitle}>당신과 함께 여정을 마친 페르소나들의 기록입니다.</p>
+      {cards.length === 0 ? (
+        <p className={styles.emptyMessage}>아직 완성된 페르소나가 없습니다.</p>
       ) : (
-        <div className={styles.sessionGrid}>
-          {completedSessions.map((session) => (
-            <CompletedCharacterCard
-              key={session._id}
-              characterName={session.characterName}
-              coreConcern={session.coreConcern}
-              completedAt={session.completedAt}
-            />
+        <div className={styles.cardGrid}>
+          {cards.map((card) => (
+            <CompletedCharacterCard key={card._id} card={card} />
           ))}
         </div>
       )}

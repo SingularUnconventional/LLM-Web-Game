@@ -1,96 +1,127 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGame, GameSessionData } from '../contexts/GameContext';
+import questionsData from '../data/psychologyQuestions.json';
 import { api } from '../utils/api';
-import psychologyQuestions from '../data/psychologyQuestions.json';
+import { PsychologyTestResponse } from '../types/api';
+import { useGame } from '../contexts/GameContext';
 import styles from './PsychologyTestPage.module.css';
-
-interface Choice {
-  text: string;
-  value: string;
-}
 
 interface Question {
   id: number;
   question: string;
-  choices: Choice[];
+  choices: { text: string; value: string }[];
 }
 
 const PsychologyTestPage: React.FC = () => {
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const { gameSession, dispatch } = useGame();
+  const navigate = useNavigate();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<{ [key: number]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { dispatch } = useGame();
-  const navigate = useNavigate();
 
-  const handleAnswer = (questionId: string, answer: string) => {
-    const newAnswers = { ...answers, [questionId]: answer };
-    setAnswers(newAnswers);
+  const currentQuestion: Question = questionsData[currentQuestionIndex];
+  const allQuestionsAnswered = Object.keys(answers).length === questionsData.length;
 
-    if (currentQuestionIndex < psychologyQuestions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
+  const handleAnswerChange = (questionId: number, value: string) => {
+    setAnswers(prev => ({
+      ...prev,
+      [questionId]: value,
+    }));
+  };
+
+  const handleNextQuestion = () => {
+    if (currentQuestionIndex < questionsData.length - 1) {
+      setCurrentQuestionIndex(prev => prev + 1);
     }
   };
 
-  const handleSubmit = async () => {
-    if (Object.keys(answers).length !== psychologyQuestions.length) {
-      setError('모든 질문에 답변해주세요.');
-      return;
+  const handlePreviousQuestion = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(prev => prev - 1);
     }
+  };
+
+  const handleSubmitAnswers = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const result = await api.post<GameSessionData>('/psychology/complete', { answers });
-      dispatch({ type: 'SET_SESSION', payload: result });
-      navigate('/play');
+      const formattedAnswers = questionsData.map(q => ({
+        question: q.question,
+        answer: answers[q.id],
+      }));
+      
+      const response = await api.psychology.submitAnswers(formattedAnswers) as PsychologyTestResponse;
+      
+      if (response.status === 'new_night_started') {
+        // Update game context with new game state and character
+        dispatch({ type: 'SET_SESSION', payload: response.gameState });
+        dispatch({ type: 'SET_TIME_OF_DAY', payload: 'night' }); // Transition to night
+        navigate('/game'); // Navigate to game play page
+      }
     } catch (err) {
-      setError(err instanceof Error ? err.message : '캐릭터 생성에 실패했습니다.');
+      console.error('Failed to submit psychology test answers:', err);
+      setError('답변 제출에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const currentQuestion: Question = psychologyQuestions[currentQuestionIndex];
+  // Ensure gameSession is updated if coming from a different route
+  useEffect(() => {
+    if (gameSession?.currentPhase === 'DAY_PSYCHOLOGY_TEST') {
+      // This page is meant to be shown during DAY_PSYCHOLOGY_TEST phase
+    } else if (gameSession && gameSession.currentPhase !== 'DAY_PSYCHOLOGY_TEST') {
+      // If game state is not in psychology test phase, navigate away
+      navigate('/game'); // Or appropriate default page
+    }
+  }, [gameSession, navigate]);
+
+  if (!currentQuestion) {
+    return <div className={styles.psychologyTestPage}>질문을 로드하는 중...</div>;
+  }
 
   return (
-    <div className={styles.pageContainer}>
-      <div className={styles.testContainer}>
-        <h2 className={styles.title}>마음의 연결</h2>
-        <p className={styles.subtitle}>당신과 닮은 존재를 찾기 위한 몇 가지 질문입니다.</p>
-        {error && <p className={styles.error}>{error}</p>}
-        <div className={styles.questionCard}>
-          <p className={styles.questionText}>{`Q${currentQuestionIndex + 1}. ${currentQuestion.question}`}</p>
-          <div className={styles.options}>
-            {currentQuestion.choices.map((option: Choice) => (
-              <button
-                key={option.value}
-                onClick={() => handleAnswer(String(currentQuestion.id), option.text)}
-                className={styles.optionButton}
-              >
-                {option.text}
-              </button>
-            ))}
-          </div>
+    <div className={styles.psychologyTestPage}>
+      <h2 className={styles.questionTitle}>심리 테스트</h2>
+      <div className={styles.questionContainer}>
+        <p className={styles.questionText}>{currentQuestion.question}</p>
+        <div className={styles.choicesContainer}>
+          {currentQuestion.choices.map(choice => (
+            <label key={choice.value} className={styles.choiceLabel}>
+              <input
+                type="radio"
+                name={`question-${currentQuestion.id}`}
+                value={choice.value}
+                checked={answers[currentQuestion.id] === choice.value}
+                onChange={() => handleAnswerChange(currentQuestion.id, choice.value)}
+                className={styles.choiceInput}
+              />
+              {choice.text}
+            </label>
+          ))}
         </div>
-        <div className={styles.progressBarContainer}>
-          <div 
-            className={styles.progressBar} 
-            style={{ width: `${((currentQuestionIndex + 1) / psychologyQuestions.length) * 100}%` }}
-          />
-        </div>
-        <p className={styles.progressText}>{`${currentQuestionIndex + 1} / ${psychologyQuestions.length}`}</p>
-        
-        {currentQuestionIndex === psychologyQuestions.length - 1 && (
-          <button 
-            onClick={handleSubmit} 
-            disabled={isLoading || Object.keys(answers).length !== psychologyQuestions.length} 
-            className={styles.submitButton}
-          >
-            {isLoading ? '연결 중...' : '결과 보기'}
+      </div>
+
+      <div className={styles.navigationButtons}>
+        {currentQuestionIndex > 0 && (
+          <button onClick={handlePreviousQuestion} className={styles.navButton} disabled={isLoading}>
+            이전
+          </button>
+        )}
+        {currentQuestionIndex < questionsData.length - 1 && (
+          <button onClick={handleNextQuestion} className={styles.navButton} disabled={isLoading || !answers[currentQuestion.id]}>
+            다음
+          </button>
+        )}
+        {allQuestionsAnswered && (
+          <button onClick={handleSubmitAnswers} className={styles.submitButton} disabled={isLoading}>
+            {isLoading ? '제출 중...' : '답변 제출'}
           </button>
         )}
       </div>
+
+      {error && <p className={styles.errorText}>{error}</p>}
     </div>
   );
 };

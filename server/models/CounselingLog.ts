@@ -5,7 +5,6 @@ export interface ICounselingLog extends Document {
   speaker: 'user' | 'ai';
   message: string;
   timestamp: Date;
-  isInitial: boolean; // To distinguish between initial and ongoing counseling
 }
 
 const CounselingLogSchema: Schema = new Schema({
@@ -13,7 +12,6 @@ const CounselingLogSchema: Schema = new Schema({
   speaker: { type: String, enum: ['user', 'ai'], required: true },
   message: { type: String, required: true },
   timestamp: { type: Date, default: Date.now },
-  isInitial: { type: Boolean, default: false },
 });
 
 export default mongoose.model<ICounselingLog>('CounselingLog', CounselingLogSchema);

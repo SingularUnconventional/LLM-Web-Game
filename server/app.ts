@@ -13,7 +13,6 @@ import characterRoutes from './routes/character';
 import counselingRoutes from './routes/counseling';
 import psychologyRoutes from './routes/psychology';
 
-config();
 connectDB();
 
 const app = express();

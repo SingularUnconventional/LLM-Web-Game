@@ -1,31 +1,25 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
+import CounselingService from '../services/counselingService';
+const counselingService = new CounselingService();
+import { ProtectedRequest } from '../middleware/authMiddleware';
 
-// @desc    Start a new counseling session or get existing logs
-// @route   GET /api/counseling
-// @access  Private
-export const startOrGetCounseling = asyncHandler(async (req: Request, res: Response) => {
-  // Find all non-initial counseling logs for the user
-  res.status(200).json({ message: 'Counseling session started or fetched' });
+const getUserId = (req: ProtectedRequest): string => {
+  if (!req.user) {
+    throw new Error('User not found in request.');
+  }
+  return req.user.id;
+};
+
+export const getHistory = asyncHandler(async (req: ProtectedRequest, res: Response) => {
+  const userId = getUserId(req);
+  const history = await counselingService.getHistory(userId);
+  res.status(200).json(history);
 });
 
-// @desc    Post a message in a counseling session
-// @route   POST /api/counseling/message
-// @access  Private
-export const postCounselingMessage = asyncHandler(async (req: Request, res: Response) => {
-  // 1. Get user, message from request
-  // 2. Call AI-9 to get AI's response
-  // 3. Save user message and AI response to CounselingLog
-  // 4. Respond with the AI's new message
-  res.status(200).json({ message: 'Counseling message posted' });
-});
-
-// @desc    End a counseling session and trigger analysis
-// @route   POST /api/counseling/end
-// @access  Private
-export const endCounselingSession = asyncHandler(async (req: Request, res: Response) => {
-  // 1. Get user and the latest counseling logs
-  // 2. Call AI-10 to analyze the log and update playerAnalysis
-  // 3. Respond with success message
-  res.status(200).json({ message: 'Counseling session ended and analyzed' });
+export const postMessage = asyncHandler(async (req: ProtectedRequest, res: Response) => {
+  const userId = getUserId(req);
+  const { message } = req.body;
+  const response = await counselingService.postMessage(userId, message);
+  res.status(200).json(response);
 });

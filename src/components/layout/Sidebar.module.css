@@ -1,11 +1,22 @@
 .sidebar {
   width: 250px;
-  background: #181818;
-  border-right: 1px solid rgba(100, 100, 224, 0.2);
+  position: fixed; /* Changed to fixed for overlay behavior */
+  top: 0;
+  left: 0;
+  height: 100vh;
+  background: var(--color-background-dark); /* Use theme variable */
+  border-right: 1px solid var(--color-border); /* Use theme variable */
   display: flex;
   flex-direction: column;
   padding: 20px;
   flex-shrink: 0;
+  transform: translateX(-100%); /* Hidden by default */
+  transition: transform 0.3s ease-in-out, background 0.5s ease, border-color 0.5s ease; /* Smooth transition */
+  z-index: 1000; /* Ensure it's above other content */
+}
+
+.sidebar[data-open="true"] {
+  transform: translateX(0); /* Show when open */
 }
 
 .logo {
@@ -17,7 +28,7 @@
 .logo a {
   font-size: 1.8rem;
   font-weight: 300;
-  color: #fff;
+  color: var(--color-text-light); /* Use theme variable */
   text-decoration: none;
 }
 
@@ -35,20 +46,20 @@
   padding: 15px 20px;
   margin-bottom: 10px;
   border-radius: 8px;
-  color: #a0a0c0;
+  color: var(--color-text-light); /* Use theme variable */
   text-decoration: none;
   transition: all 0.3s;
 }
 
 .menu li a:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.1); /* Adjusted for theme */
+  color: var(--color-accent); /* Use theme variable */
 }
 
 .menu li a.active {
-  background: #7f5af0;
-  color: #fff;
-  box-shadow: 0 5px 15px rgba(127, 90, 240, 0.3);
+  background: var(--color-accent); /* Use theme variable */
+  color: var(--color-text-dark); /* Use theme variable */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Adjusted shadow */
 }
 
 .footer {
@@ -62,8 +73,8 @@
   justify-content: center;
   gap: 15px;
   background: transparent;
-  border: 1px solid #4a4a8a;
-  color: #a0a0c0;
+  border: 1px solid var(--color-border); /* Use theme variable */
+  color: var(--color-text-light); /* Use theme variable */
   padding: 15px;
   border-radius: 8px;
   cursor: pointer;
@@ -71,7 +82,18 @@
 }
 
 .logoutButton:hover {
-  background: #ff6b6b;
-  border-color: #ff6b6b;
-  color: #fff;
+  background: var(--color-primary); /* Use theme variable */
+  border-color: var(--color-primary); /* Use theme variable */
+  color: var(--color-text-light); /* Use theme variable */
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black overlay */
+  z-index: 999; /* Below sidebar, above other content */
+  transition: opacity 0.3s ease-in-out;
 }

@@ -79,7 +79,7 @@ const ChatInterface: React.FC = () => {
   };
 
   return (
-    <div className={styles.chatInterfaceContainer}>
+    <div className={styles.chatInterfaceContainer} data-theme={gameSession?.timeOfDay || 'day'}>
       <div className={styles.messageList}>
         {gameSession?.dialogueHistory.map((entry, index) => (
           <div key={index} className={`${styles.messageBubble} ${entry.sender === 'user' ? styles.user : styles.character}`}>
@@ -106,8 +106,9 @@ const ChatInterface: React.FC = () => {
           }}
           placeholder="메시지를 입력하세요..."
           disabled={isLoading}
+          className={styles.inputField}
         />
-        <button onClick={handleSendMessage} disabled={isLoading}>
+        <button onClick={handleSendMessage} disabled={isLoading} className={styles.sendButton}>
           {isLoading ? '전송 중...' : '전송'}
         </button>
       </div>

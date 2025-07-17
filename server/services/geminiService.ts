@@ -14,120 +14,97 @@ function parseJson(jsonString: string): any {
   }
 }
 
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.0-flash",
+  safetySettings: [
+    {
+      category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+      threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+    },
+    {
+      category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+      threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH,
+    },
+    {
+      category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    },
+    {
+      category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+      threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    },
+  ],
+});
+
 class GeminiService {
-  private textModel: GenerativeModel;
-  private imageModel: GenerativeModel;
+  async generateText(prompt: string): Promise<string> {
+    try {
+      const result = await model.generateContent(prompt);
+      const response = result.response;
+      const text = response.text();
+      return text;
+    } catch (error) {
+      console.error('Error generating text with Gemini:', error);
+      // Check if it's a safety-related block
+      if (error.message.includes('SAFETY')) {
+        return "죄송합니다, 저의 안전 규칙에 따라 해당 내용에 대해서는 답변할 수 없어요. 다른 이야기를 해볼까요?";
+      }
+      throw new Error('Failed to generate text from AI.');
+    }
+  }
 
-  constructor() {
-    // Model for text-based generation and chat
-    this.textModel = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
-      safetySettings: [
-        { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
-        { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_ONLY_HIGH },
-      ],
+  async generateFinalPersona(finalPlayerAnalysis: any, allConversationLogs: string): Promise<any> {
+    try {
+      const promptTemplate = await promptService.getPrompt('final_persona_generation_prompt.txt');
+      const prompt = promptTemplate
+        .replace('{{finalPlayerAnalysis}}', JSON.stringify(finalPlayerAnalysis, null, 2))
+        .replace('{{allConversationLogs}}', allConversationLogs);
+      
+      return await this.generateJson(prompt);
+    } catch (error) {
+      console.error('Error generating final persona with Gemini:', error);
+      throw new Error('Failed to generate final persona from AI.');
+    }
+  }
+
+  async generateImage(prompt: string): Promise<string> {
+    const imageModel = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash", // Or a more specialized image model if available and necessary
     });
 
-    // Model for image generation
-    this.imageModel = genAI.getGenerativeModel({ model: 'gemini-pro-vision' }); // Placeholder, will use a proper image model
+    try {
+      const result = await imageModel.generateContent(prompt);
+      const response = result.response;
+      // Assuming the response contains a URL or a way to get one. 
+      // This part might need adjustment based on actual Gemini Vision API response structure.
+      // For now, we'll assume text() might return a URL or a description that can be parsed.
+      // In a real scenario, we'd expect a specific image generation output format.
+      const imageUrl = response.text(); // Placeholder: Actual implementation might differ
+      return imageUrl;
+    } catch (error) {
+      console.error('Error generating image with Gemini:', error);
+      throw new Error('Failed to generate image from AI.');
+    }
   }
 
-  /**
-   * A generic helper to call the Gemini text model.
-   * @param prompt The complete prompt to send to the model.
-   * @param expectJson If true, configures the model to expect a JSON response.
-   * @returns The raw text response from the model.
-   */
-  private async _callTextModel(prompt: string, expectJson: boolean = false): Promise<string> {
-    const generationConfig = expectJson ? { responseMimeType: 'application/json' } : {};
-    const result = await this.textModel.generateContent({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig,
+  async generateJson(prompt: string): Promise<any> {
+    const jsonModel = genAI.getGenerativeModel({
+      model: "gemini-2.0-flash",
+      generationConfig: {
+        responseMimeType: "application/json",
+      },
+      // Safety settings can also be applied here if needed
     });
-    return result.response.text();
-  }
 
-  // [AI-1] & [AI-9] Initial and Ongoing Counseling Response
-  async getCounselingResponse(promptName: string, history: any[]): Promise<string> {
-    const prompt = promptService.getPrompt(promptName, { counseling_history: history });
-    return this._callTextModel(prompt);
-  }
-
-  // [AI-2] Initial Counseling Analysis
-  async analyzeInitialCounseling(log: string): Promise<any> {
-    const prompt = promptService.getPrompt('initial_counseling_analysis_prompt', { counseling_log: log });
-    const response = await this._callTextModel(prompt, true);
-    return parseJson(response);
-  }
-
-  // [AI-3] Character Dialogue
-  async getCharacterDialogue(characterProfile: any, history: any[], playerInput: string): Promise<string> {
-    const prompt = promptService.getPrompt('character_dialogue_prompt', {
-      character_profile: characterProfile,
-      conversation_history: history,
-      player_input: playerInput,
-    });
-    return this._callTextModel(prompt);
-  }
-
-  // [AI-4] Conversation Summary
-  async summarizeConversation(characterName: string, problem: string, log: string): Promise<any> {
-    const prompt = promptService.getPrompt('conversation_summary_prompt', {
-      character_name: characterName,
-      character_problem: problem,
-      conversation_log: log,
-    });
-    const response = await this._callTextModel(prompt, true);
-    return parseJson(response);
-  }
-
-  // [AI-5] Emotion Keyword Extraction
-  async extractEmotionKeywords(summary: string, outcome: string): Promise<string[]> {
-    const prompt = promptService.getPrompt('emotion_keyword_extraction_prompt', { summary, outcome });
-    const response = await this._callTextModel(prompt, true);
-    return parseJson(response);
-  }
-
-  // [AI-6] Player Deep Analysis
-  async analyzePlayerData(gameDay: number, analysis: any, log: string, answers: any[]): Promise<any> {
-    const prompt = promptService.getPrompt('player_deep_analysis_prompt', {
-      gameDay: gameDay,
-      existingPlayerAnalysis: analysis,
-      lastConversationLog: log,
-      psychologyAnswers: answers,
-    });
-    const response = await this._callTextModel(prompt, true);
-    return parseJson(response);
-  }
-
-  // [AI-7] & [AI-11] Fairy Tale and Persona Character Generation
-  async generateCharacter(promptName: string, data: any): Promise<any> {
-    const prompt = promptService.getPrompt(promptName, data);
-    const response = await this._callTextModel(prompt, true);
-    return parseJson(response);
-  }
-
-  // [AI-8] Profile Image Generation
-  async generateImage(characterDescription: string): Promise<string> {
-    // This uses a placeholder as the actual image generation API call might differ.
-    // The prompt is prepared here for the call.
-    const prompt = promptService.getPrompt('image_generation_prompt', { character_description: characterDescription });
-    
-    // In a real scenario, you would use a library like @google-cloud/aiplatform
-    // to call the image generation model endpoint.
-    // For now, we'll return a placeholder URL.
-    console.log(`[GeminiService] Image generation prompt: ${prompt}`);
-    return `https://picsum.photos/seed/${encodeURIComponent(characterDescription)}/512`;
-  }
-
-  // [AI-10] Ongoing Counseling Analysis
-  async analyzeOngoingCounseling(analysis: any, log: string): Promise<any> {
-    const prompt = promptService.getPrompt('ongoing_counseling_analysis_prompt', {
-      existingPlayerAnalysis: analysis,
-      newCounselingLog: log,
-    });
-    const response = await this._callTextModel(prompt, true);
-    return parseJson(response);
+    try {
+      const result = await jsonModel.generateContent(prompt);
+      const response = result.response;
+      const text = response.text();
+      return JSON.parse(text);
+    } catch (error) {
+      console.error('Error generating JSON with Gemini:', error);
+      throw new Error('Failed to generate JSON from AI.');
+    }
   }
 }
 

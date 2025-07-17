@@ -1,12 +1,60 @@
 .layoutContainer {
   display: flex;
+  flex-direction: column; /* Changed to column to stack header and main content */
   min-height: 100vh;
-  background-color: #121212;
-  color: #e0e0e0;
+  width: 100%;
+  background-color: var(--color-background-light); /* Use theme variable */
+  color: var(--color-text-dark); /* Use theme variable */
+  transition: background-color 0.5s ease, color 0.5s ease; /* Smooth transition for theme change */
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  background-color: var(--color-primary); /* Use theme variable */
+  color: var(--color-text-light); /* Use theme variable */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.timeDisplay {
+  font-size: 1.1em;
+  font-weight: bold;
+  display: flex;
+  gap: 10px;
+}
+
+.emotionPieces {
+  /* Styles for emotion pieces container */
+  display: flex;
+  gap: 5px;
+  font-size: 0.9em;
+  color: var(--color-text-light);
+}
+
+.menuButton {
+  font-size: 1.1em;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 5px;
+  background-color: var(--color-secondary); /* Use theme variable */
+  color: var(--color-text-dark); /* Use theme variable */
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.menuButton:hover {
+  opacity: 0.8;
 }
 
 .mainContent {
   flex-grow: 1;
-  padding: 40px;
+  padding: 20px; /* Adjusted padding */
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }

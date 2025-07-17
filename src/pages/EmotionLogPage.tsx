@@ -1,51 +1,63 @@
-import React, { useEffect, useState } from 'react';
-import styles from './EmotionLogPage.module.css';
+import React, { useState, useEffect } from 'react';
 import { api } from '../utils/api';
-import { EmotionPiece } from '../types/api';
+import { EmotionPiece, ICharacterCard, ICharacter } from '../types/api';
+import styles from './EmotionLogPage.module.css';
+
+interface EnrichedEmotionPiece extends EmotionPiece {
+  character?: ICharacter;
+}
 
 const EmotionLogPage: React.FC = () => {
-  const [emotionPieces, setEmotionPieces] = useState<EmotionPiece[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [pieces, setPieces] = useState<EnrichedEmotionPiece[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchEmotionPieces = async () => {
       try {
-        const response = await api.get<EmotionPiece[]>('/emotions');
-        setEmotionPieces(response);
-      } catch (err) {
-        console.error('Failed to fetch emotion pieces:', err);
-        setError('Failed to load emotion pieces.');
-      }
-      finally {
-        setLoading(false);
+        const fetchedPieces = await api.character.getEmotionPieces() as EmotionPiece[];
+        const cards = await api.character.getCards() as ICharacterCard[];
+        
+        const enrichedPieces = await Promise.all(fetchedPieces.map(async (piece: EmotionPiece) => {
+          const relatedCard = cards.find((c: ICharacterCard) => c._id === piece.characterCardId);
+          if (relatedCard) {
+            const character = await api.character.getCharacterById(relatedCard.characterId);
+            return { ...piece, character };
+          }
+          return piece;
+        }));
+
+        setPieces(enrichedPieces);
+      } catch (error) {
+        console.error("Failed to fetch emotion pieces:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
-
     fetchEmotionPieces();
   }, []);
 
-  if (loading) {
-    return <div className={styles.emotionLogPageContainer}>로딩 중...</div>;
-  }
-
-  if (error) {
-    return <div className={styles.emotionLogPageContainer}><p style={{ color: 'red' }}>{error}</p></div>;
+  if (isLoading) {
+    return <div className={styles.loading}>감정 기록을 불러오는 중...</div>;
   }
 
   return (
-    <div className={styles.emotionLogPageContainer}>
-      <h1>나의 마음의 조각들</h1>
-      {emotionPieces.length === 0 ? (
-        <p>아직 수집한 마음의 조각이 없습니다.</p>
+    <div className={styles.container}>
+      <h1 className={styles.title}>감정의 조각들</h1>
+      <p className={styles.subtitle}>페르소나와의 대화를 통해 발견한 당신의 감정들입니다.</p>
+      {pieces.length === 0 ? (
+        <p className={styles.emptyMessage}>아직 수집된 감정 조각이 없습니다.</p>
       ) : (
-        <div className={styles.emotionGrid}>
-          {emotionPieces.map((piece) => (
-            <div key={piece._id} className={styles.emotionCard}>
-              <h3>{piece.emotionType}</h3>
-              <p>강도: {piece.intensity}</p>
-              <p>맥락: {piece.context}</p>
-              <p>수집일: {new Date(piece.createdAt).toLocaleDateString()}</p>
+        <div className={styles.logGrid}>
+          {pieces.map((piece) => (
+            <div key={piece._id} className={styles.pieceCard}>
+              <div className={styles.keyword}>{piece.keyword}</div>
+              {piece.character && (
+                <div className={styles.source}>
+                  <img src={piece.character.pixelatedImageUrl} alt={piece.character.name} />
+                  <span>{piece.character.name}</span>
+                </div>
+              )}
+              <div className={styles.date}>{new Date(piece.acquiredAt).toLocaleDateString()}</div>
             </div>
           ))}
         </div>
