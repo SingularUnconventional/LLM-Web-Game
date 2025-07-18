@@ -1,157 +1,104 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { api } from '../utils/api';
-import { ICharacter, Message, GameStartResponse, ChatResponse, ConversationEndResult } from '../types/api';
+import React, { useEffect, useState, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { useGame } from '../contexts/GameContext';
 import styles from './GamePlayPage.module.css';
 
 const GamePlayPage: React.FC = () => {
-  const [character, setCharacter] = useState<ICharacter | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [isEnded, setIsEnded] = useState(false);
-  const [endResult, setEndResult] = useState<ConversationEndResult | null>(null);
-  
+  const { characterId } = useParams<{ characterId: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
-  const chatEndRef = useRef<HTMLDivElement>(null);
+  const { 
+    activeCharacter, 
+    counselingHistory, 
+    isLoading, 
+    error, 
+    selectCharacter, 
+    sendMessage 
+  } = useGame();
+  
+  const [inputMessage, setInputMessage] = useState('');
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const initializeGame = async (gameData: GameStartResponse) => {
-      if (gameData.character) {
-        setCharacter(gameData.character);
-      }
-      
-      // If coming from initial counseling, there's no history, just the initial dialogue
-      if (gameData.conversationHistory && gameData.conversationHistory.length > 0) {
-        setMessages(gameData.conversationHistory);
-      } else if (gameData.character?.initialDialogue) {
-        setMessages([{ speaker: 'character', message: gameData.character.initialDialogue }]);
-      }
-      setIsLoading(false);
-    };
-
-    const fetchGameData = async () => {
-      try {
-        setIsLoading(true);
-        const response: GameStartResponse = await api.game.startGame();
-        if (response.status === 'game_loaded') {
-          initializeGame(response);
-        } else {
-          // Handle other statuses, e.g., redirect
-          navigate('/dashboard');
-        }
-      } catch (error) {
-        console.error("Failed to fetch game data:", error);
-        navigate('/dashboard');
-      }
-    };
-
-    const gameDataFromState = location.state?.gameData as GameStartResponse;
-    if (gameDataFromState) {
-      initializeGame(gameDataFromState);
+    if (characterId) {
+      selectCharacter(characterId);
     } else {
-      fetchGameData();
+      // characterId가 없으면 홈페이지로 리디렉션
+      navigate('/');
     }
-  }, [location.state, navigate]);
+  }, [characterId, selectCharacter, navigate]);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isLoading]);
+    // 채팅창 스크롤을 항상 아래로 유지
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [counselingHistory]);
 
-  const handleSendMessage = async () => {
-    if (!input.trim() || isLoading || isEnded) return;
-
-    const userMessage: Message = { speaker: 'user', message: input };
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
-
-    try {
-      // Use the new game service endpoint
-      const response: ChatResponse = await api.game.postChatMessage(input);
-      const characterMessage: Message = { speaker: 'character', message: response.message };
-      setMessages(prev => [...prev, characterMessage]);
-    } catch (error) {
-      console.error('Error sending message:', error);
-      const errorMessage: Message = { speaker: 'character', message: '죄송합니다, 응답을 생성하는 데 실패했습니다.' };
-      setMessages(prev => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
+  const handleSendMessage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (inputMessage.trim() && !isLoading) {
+      sendMessage(inputMessage.trim());
+      setInputMessage('');
     }
   };
 
-  const handleEndConversation = async () => {
-    if (isLoading || isEnded) return;
-    setIsLoading(true);
-    try {
-      const result = await api.game.endCharacterStory() as ConversationEndResult;
-      if (result.status === 'final_persona_generation_started') {
-        alert('당신의 모든 여정이 끝났습니다. 이제 마지막 이야기를 맞이할 시간입니다.');
-        navigate('/dashboard');
-      } else {
-        setEndResult(result);
-        setIsEnded(true);
-      }
-    } catch (error) {
-      console.error('Error ending conversation:', error);
-      alert('대화 종료에 실패했습니다.');
-      setIsLoading(false);
-    }
-  };
+  if (!activeCharacter && isLoading) {
+    return <div>Loading character...</div>;
+  }
 
-  const renderEndScreen = () => {
-    if (!endResult) return null; // Add null check
+  if (error) {
+    return <div className={styles.error}>Error: {error}</div>;
+  }
+  
+  if (!activeCharacter) {
     return (
-    <div className={styles.endScreen}>
-      <h2>대화 결과</h2>
-      <h3>{endResult?.card.outcome}</h3>
-      <p>{endResult?.card.summary}</p>
-      {endResult?.card && <div><strong>새로운 페르소나 카드를 얻었습니다!</strong></div>}
-      {endResult?.emotionPieces?.length > 0 && (
-        <div>
-          <strong>새로운 감정 조각:</strong>
-          <ul>
-            {endResult.emotionPieces.map(p => <li key={p._id}>{p.keyword}</li>)}
-          </ul>
-        </div>
-      )}
-      <button onClick={() => navigate('/dashboard')}>대시보드로 돌아가기</button>
-    </div>
+      <div>
+        <p>캐릭터를 찾을 수 없습니다. 홈으로 돌아가 다시 시도해주세요.</p>
+        <button onClick={() => navigate('/')}>홈으로</button>
+      </div>
     );
-  };
-
-  if (!character) {
-    return <div className={styles.loading}>게임 데이터를 불러오는 중...</div>;
   }
 
   return (
-    <div className={styles.pageContainer}>
+    <div className={styles.gamePlayContainer}>
       <div className={styles.characterProfile}>
-        <img src={character.pixelatedImageUrl || '/placeholder.png'} alt={character.name} />
-        <h2>{character.name}</h2>
-        <p>{character.description}</p>
-        <p><strong>고민:</strong> {character.problem}</p>
+        <img src={activeCharacter.imageUrl} alt={activeCharacter.name} className={styles.characterImage} />
+        <h2 className={styles.characterName}>{activeCharacter.name}</h2>
+        <p className={styles.characterDescription}>{activeCharacter.description}</p>
       </div>
-      <div className={styles.chatContainer}>
-        {isEnded ? renderEndScreen() : (
-          <>
-            <div className={styles.messageList}>
-              {messages.map((msg, index) => (
-                <div key={index} className={`${styles.messageBubble} ${styles[msg.speaker]}`}>
-                  <p>{msg.message}</p>
+      <div className={styles.chatInterface}>
+        <div className={styles.chatMessages} ref={chatContainerRef}>
+          {counselingHistory.map((log) => (
+            <div key={log._id}>
+              <div className={`${styles.message} ${styles.userMessage}`}>
+                <p>{log.userMessage}</p>
+              </div>
+              <div className={`${styles.message} ${styles.aiMessage}`}>
+                <p>{log.aiMessage}</p>
+              </div>
+            </div>
+          ))}
+          {isLoading && counselingHistory.length > 0 && counselingHistory[counselingHistory.length - 1].aiMessage === '...' && (
+             <div className={`${styles.message} ${styles.aiMessage}`}>
+                <div className={styles.typingIndicator}>
+                  <span></span><span></span><span></span>
                 </div>
-              ))}
-              {isLoading && <div className={`${styles.messageBubble} ${styles.character} ${styles.typingIndicator}`}><span></span><span></span><span></span></div>}
-              <div ref={chatEndRef} />
-            </div>
-            <div className={styles.messageInput}>
-              <input type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyPress={(e) => { if (e.key === 'Enter' && !isLoading) handleSendMessage(); }} disabled={isLoading} />
-              <button onClick={handleSendMessage} disabled={isLoading}>전송</button>
-            </div>
-            <button onClick={handleEndConversation} disabled={isLoading} className={styles.endButton}>이야기 끝내기</button>
-          </>
-        )}
+              </div>
+          )}
+        </div>
+        <form onSubmit={handleSendMessage} className={styles.chatInputForm}>
+          <input
+            type="text"
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            placeholder="메시지를 입력하세요..."
+            className={styles.chatInput}
+            disabled={isLoading}
+          />
+          <button type="submit" className={styles.sendButton} disabled={isLoading}>
+            전송
+          </button>
+        </form>
       </div>
     </div>
   );

@@ -1,56 +1,47 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { asyncHandler } from '../utils/asyncHandler';
-import GameService from '../services/gameService';
-import { ProtectedRequest } from '../middleware/authMiddleware'; // Added import
+import * as gameService from '../services/gameService';
+import { ProtectedRequest } from '../middleware/authMiddleware';
 
-const gameService = new GameService(); // Instantiated GameService
-
-const getUserId = (req: ProtectedRequest): string => {
-  // authMiddleware should ensure req.user is populated.
-  if (!req.user) {
-    throw new Error('User not found in request. Authentication might have failed.');
-  }
-  return req.user.id;
-};
-
+/**
+ * 심리 테스트 결과를 제출하고 게임을 시작합니다.
+ */
 export const startGame = asyncHandler(async (req: ProtectedRequest, res: Response) => {
-  const userId = getUserId(req);
-  const result = await gameService.startGame(userId);
-  res.status(200).json(result);
+  const userId = req.user!._id;
+  const { testResult } = req.body; // testResult: string
+
+  if (!testResult) {
+    return res.status(400).json({ message: '심리 테스트 결과가 필요합니다.' });
+  }
+
+  const result = await gameService.startGameWithTestResult(userId, testResult);
+  res.status(201).json(result);
 });
 
-export const submitInitialCounseling = asyncHandler(async (req: ProtectedRequest, res: Response) => {
-  const userId = getUserId(req);
-  const result = await gameService.submitInitialCounseling(userId, req.body.log);
-  res.status(200).json(result);
-});
+/**
+ * 사용자의 메시지를 받아 턴을 진행합니다.
+ */
+export const handleTurn = asyncHandler(async (req: ProtectedRequest, res: Response) => {
+  const { characterId } = req.params;
+  const { message } = req.body;
 
-export const postChatMessage = asyncHandler(async (req: ProtectedRequest, res: Response) => {
-  const userId = getUserId(req);
-  const result = await gameService.postChatMessage(userId, req.body.message);
-  res.status(200).json(result);
-});
+  if (!message) {
+    return res.status(400).json({ message: '메시지 내용이 필요합니다.' });
+  }
 
-export const endCharacterStory = asyncHandler(async (req: ProtectedRequest, res: Response) => {
-  const userId = getUserId(req);
-  const result = await gameService.endCharacterStory(userId);
-  res.status(200).json(result);
-});
+  const result = await gameService.processTurn(characterId, message);
 
-export const skipToMorning = asyncHandler(async (req: ProtectedRequest, res: Response) => {
-  const userId = getUserId(req);
-  const result = await gameService.skipToMorning(userId); // Call on instance
-  res.status(200).json(result);
-});
-
-export const skipToNight = asyncHandler(async (req: ProtectedRequest, res: Response) => {
-  const userId = getUserId(req);
-  const result = await gameService.skipToNight(userId); // Call on instance
-  res.status(200).json(result);
-});
-
-export const startPsychologyPhase = asyncHandler(async (req: ProtectedRequest, res: Response) => {
-  const userId = getUserId(req);
-  const result = await gameService.startPsychologyPhase(userId);
-  res.status(200).json(result);
+  if (result.isEnding) {
+    // 엔딩이 발생한 경우
+    res.status(200).json({
+      message: 'Ending has been reached.',
+      ...result,
+    });
+  } else {
+    // 일반적인 대화 턴
+    res.status(200).json({
+      message: 'Turn processed successfully.',
+      ...result,
+    });
+  }
 });

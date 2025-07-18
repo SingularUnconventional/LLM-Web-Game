@@ -5,7 +5,9 @@
   width: 100%;
   background-color: var(--color-background-light); /* Use theme variable */
   color: var(--color-text-dark); /* Use theme variable */
-  transition: background-color 0.5s ease, color 0.5s ease; /* Smooth transition for theme change */
+  transition:
+    background-color 0.5s ease,
+    color 0.5s ease; /* Smooth transition for theme change */
 }
 
 .header {
@@ -17,7 +19,9 @@
   color: var(--color-text-light); /* Use theme variable */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   z-index: 100;
-  transition: background-color 0.5s ease, color 0.5s ease;
+  transition:
+    background-color 0.5s ease,
+    color 0.5s ease;
 }
 
 .timeDisplay {
@@ -42,7 +46,9 @@
   border-radius: 5px;
   background-color: var(--color-secondary); /* Use theme variable */
   color: var(--color-text-dark); /* Use theme variable */
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 .menuButton:hover {

@@ -6,7 +6,10 @@ import styles from './Sidebar.module.css';
 // You can use an icon library like react-icons
 // import { FaHome, FaUserFriends, FaPuzzlePiece, FaCog, FaSignOutAlt } from 'react-icons/fa';
 
-const Sidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => {
+const Sidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
+  isOpen,
+  onClose,
+}) => {
   const { logout } = useAuth();
   const navigate = useNavigate();
 
@@ -17,31 +20,51 @@ const Sidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, o
 
   return (
     <>
-      <nav className={`${styles.sidebar} ${isOpen ? styles.open : ''}`} data-open={isOpen}>
+      <nav
+        className={`${styles.sidebar} ${isOpen ? styles.open : ''}`}
+        data-open={isOpen}
+      >
         <div className={styles.logo}>
           <NavLink to="/">마음의 우주</NavLink>
         </div>
         <ul className={styles.menu}>
           <li>
-            <NavLink to="/dashboard" end className={({ isActive }) => isActive ? styles.active : ''} onClick={onClose}>
+            <NavLink
+              to="/dashboard"
+              end
+              className={({ isActive }) => (isActive ? styles.active : '')}
+              onClick={onClose}
+            >
               {/* <FaHome /> */}
               <span>대시보드</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/persona-collection" className={({ isActive }) => isActive ? styles.active : ''} onClick={onClose}>
+            <NavLink
+              to="/persona-collection"
+              className={({ isActive }) => (isActive ? styles.active : '')}
+              onClick={onClose}
+            >
               {/* <FaUserFriends /> */}
               <span>캐릭터 카드</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/counseling" className={({ isActive }) => isActive ? styles.active : ''} onClick={onClose}>
+            <NavLink
+              to="/counseling"
+              className={({ isActive }) => (isActive ? styles.active : '')}
+              onClick={onClose}
+            >
               {/* <FaPuzzlePiece /> */}
               <span>수시 상담</span>
             </NavLink>
           </li>
           <li>
-            <NavLink to="/emotion-log" className={({ isActive }) => isActive ? styles.active : ''} onClick={onClose}>
+            <NavLink
+              to="/emotion-log"
+              className={({ isActive }) => (isActive ? styles.active : '')}
+              onClick={onClose}
+            >
               {/* <FaPuzzlePiece /> */}
               <span>감정 기록</span>
             </NavLink>
@@ -54,7 +77,8 @@ const Sidebar: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, o
           </button>
         </div>
       </nav>
-      {isOpen && <div className={styles.overlay} onClick={onClose}></div>} {/* Overlay for closing sidebar */}
+      {isOpen && <div className={styles.overlay} onClick={onClose}></div>}{' '}
+      {/* Overlay for closing sidebar */}
     </>
   );
 };

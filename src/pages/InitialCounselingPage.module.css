@@ -12,7 +12,7 @@
   max-width: 800px;
   background: #fff;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   padding: 1.5rem 2rem;
@@ -79,12 +79,22 @@
   animation: bounce 1.4s infinite both;
 }
 
-.typingIndicator span:nth-child(1) { animation-delay: -0.32s; }
-.typingIndicator span:nth-child(2) { animation-delay: -0.16s; }
+.typingIndicator span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+.typingIndicator span:nth-child(2) {
+  animation-delay: -0.16s;
+}
 
 @keyframes bounce {
-  0%, 80%, 100% { transform: scale(0); }
-  40% { transform: scale(1.0); }
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+  }
+  40% {
+    transform: scale(1);
+  }
 }
 
 .messageInput {
@@ -135,4 +145,57 @@
 .endButton:disabled {
   background-color: #82d895;
   cursor: not-allowed;
+}
+
+/* Intro Sequence Styles */
+.introContainer {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100%;
+  background-color: #1a1a1a;
+  color: #fff;
+  cursor: pointer;
+  text-align: center;
+  padding: 2rem;
+}
+
+.introText {
+  font-size: 2rem;
+  font-weight: 500;
+  max-width: 800px;
+  margin: 0;
+  animation:
+    fadeIn 1s ease-in-out,
+    typing 2.5s steps(40, end);
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 0.15em solid orange; /* Blinking cursor */
+}
+
+.clickPrompt {
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  color: #aaa;
+  animation: fadeIn 2s ease-in-out 1s both; /* Fade in after text animation */
+}
+
+@keyframes typing {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

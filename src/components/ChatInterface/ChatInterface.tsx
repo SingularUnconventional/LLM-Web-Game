@@ -20,14 +20,14 @@ const ChatInterface: React.FC = () => {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [gameSession?.dialogueHistory, isLoading]);
 
   const handleSendMessage = async () => {
     if (!message.trim() || !gameSession?._id || isLoading) return;
 
     const userMessage = message.trim();
-    
+
     dispatch({
       type: 'ADD_DIALOGUE_ENTRY',
       payload: {
@@ -35,7 +35,7 @@ const ChatInterface: React.FC = () => {
         message: userMessage,
         timestamp: new Date(),
         characterEmotionState: gameSession.characterEmotionProgress,
-      }
+      },
     });
     setMessage('');
     setIsLoading(true);
@@ -47,7 +47,7 @@ const ChatInterface: React.FC = () => {
       });
 
       dispatch({ type: 'UPDATE_EMOTION', payload: response.newEmotion });
-      
+
       dispatch({
         type: 'ADD_DIALOGUE_ENTRY',
         payload: {
@@ -55,23 +55,25 @@ const ChatInterface: React.FC = () => {
           message: response.message,
           timestamp: new Date(),
           characterEmotionState: { currentEmotionState: response.newEmotion },
-        }
+        },
       });
 
       dispatch({
         type: 'UPDATE_CONVERSATION_STATUS',
-        payload: { isResolved: response.conversationStatus.isNarrativeConflictResolved }
+        payload: {
+          isResolved: response.conversationStatus.isNarrativeConflictResolved,
+        },
       });
-
     } catch (error) {
       console.error('Error sending message:', error);
       dispatch({
         type: 'ADD_DIALOGUE_ENTRY',
         payload: {
           sender: 'character',
-          message: '메시지를 보내는 데 실패했습니다. 잠시 후 다시 시도해주세요.',
-          timestamp: new Date()
-        }
+          message:
+            '메시지를 보내는 데 실패했습니다. 잠시 후 다시 시도해주세요.',
+          timestamp: new Date(),
+        },
       });
     } finally {
       setIsLoading(false);
@@ -79,17 +81,29 @@ const ChatInterface: React.FC = () => {
   };
 
   return (
-    <div className={styles.chatInterfaceContainer} data-theme={gameSession?.timeOfDay || 'day'}>
+    <div
+      className={styles.chatInterfaceContainer}
+      data-theme={gameSession?.timeOfDay || 'day'}
+    >
       <div className={styles.messageList}>
         {gameSession?.dialogueHistory.map((entry, index) => (
-          <div key={index} className={`${styles.messageBubble} ${entry.sender === 'user' ? styles.user : styles.character}`}>
+          <div
+            key={index}
+            className={`${styles.messageBubble} ${entry.sender === 'user' ? styles.user : styles.character}`}
+          >
             <p>{entry.message}</p>
-            <span className={styles.timestamp}>{new Date(entry.timestamp).toLocaleTimeString()}</span>
+            <span className={styles.timestamp}>
+              {new Date(entry.timestamp).toLocaleTimeString()}
+            </span>
           </div>
         ))}
         {isLoading && (
-          <div className={`${styles.messageBubble} ${styles.character} ${styles.typingIndicator}`}>
-            <span></span><span></span><span></span>
+          <div
+            className={`${styles.messageBubble} ${styles.character} ${styles.typingIndicator}`}
+          >
+            <span></span>
+            <span></span>
+            <span></span>
           </div>
         )}
         <div ref={chatEndRef} />
@@ -108,7 +122,11 @@ const ChatInterface: React.FC = () => {
           disabled={isLoading}
           className={styles.inputField}
         />
-        <button onClick={handleSendMessage} disabled={isLoading} className={styles.sendButton}>
+        <button
+          onClick={handleSendMessage}
+          disabled={isLoading}
+          className={styles.sendButton}
+        >
           {isLoading ? '전송 중...' : '전송'}
         </button>
       </div>

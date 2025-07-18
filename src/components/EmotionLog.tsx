@@ -1,23 +1,23 @@
 import React from 'react';
-import { useGame } from '@/contexts/GameContext';
 import styles from './EmotionLog.module.css';
+import { ICharacterCard } from '../../server/models/CharacterCard';
 
-const EmotionLog: React.FC = () => {
-  const { gameSession } = useGame();
+interface EmotionLogProps {
+  characterCards: ICharacterCard[];
+}
 
-  const emotionSnapshots = gameSession?.dialogueHistory
-    .filter(entry => entry.sender === 'character' && entry.characterEmotionState?.currentEmotionState)
-    .slice(-10); // Get last 10 snapshots
-
+const EmotionLog: React.FC<EmotionLogProps> = ({ characterCards }) => {
   return (
     <div className={styles.logContainer}>
-      <h3>감정 변화 기록</h3>
       <ul className={styles.logList}>
-        {emotionSnapshots?.map((entry, index) => (
-          <li key={index} className={styles.logItem}>
-            <span className={styles.logMessage}>{entry.message.substring(0, 20)}...</span>
-            <span className={styles.logEmotion}>{entry.characterEmotionState?.currentEmotionState}</span>
+        {characterCards.map((card, index) => (
+          <li key={card._id || index} className={styles.logItem}>
+            <span className={styles.emotionShard}>{card.emotionShard}</span>
           </li>
+        ))}
+        {/* 10개 목표에 대한 진행도를 시각적으로 보여주기 위해 빈 슬롯 추가 */}
+        {Array.from({ length: 10 - characterCards.length }).map((_, index) => (
+          <li key={`empty-${index}`} className={styles.emptySlot}></li>
         ))}
       </ul>
     </div>

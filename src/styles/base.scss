@@ -9,35 +9,36 @@
 
 // Global Variables (Colors, Fonts)
 :root {
-  --color-primary: #A7BED3; // Soft Sky Blue
-  --color-secondary: #C6E2E9; // Light Mint
-  --color-accent: #F1FFC4; // Soft Yellow
-  --color-text-dark: #4A4A6A; // Calm Navy-like
-  --color-text-light: #FFFFFF; // White
-  --color-background-light: #F8F8F8; // Very Light Gray
-  --color-background-dark: #80A4C2; // Slightly Darker Sky Blue
+  --color-primary: #a7bed3; // Soft Sky Blue
+  --color-secondary: #c6e2e9; // Light Mint
+  --color-accent: #f1ffc4; // Soft Yellow
+  --color-text-dark: #4a4a6a; // Calm Navy-like
+  --color-text-light: #ffffff; // White
+  --color-background-light: #f8f8f8; // Very Light Gray
+  --color-background-dark: #80a4c2; // Slightly Darker Sky Blue
   --color-button-bg: var(--color-primary);
   --color-button-text: var(--color-text-light);
-  --color-border: #D3D3D3; // Light Gray
+  --color-border: #d3d3d3; // Light Gray
 }
 
 // Day/Night Theme Variables
 [data-theme='night'] {
-  --color-primary: #4A4A6A; // Darker Blue/Purple
-  --color-secondary: #6A7B9F; // Muted Blue
-  --color-accent: #B0C4DE; // Light Steel Blue
-  --color-text-dark: #E0E0E0; // Light Gray for text
-  --color-text-light: #2C3E50; // Dark Blue for light text areas
-  --color-background-light: #2C3E50; // Dark Blue background
-  --color-background-dark: #1A242F; // Even darker blue
+  --color-primary: #4a4a6a; // Darker Blue/Purple
+  --color-secondary: #6a7b9f; // Muted Blue
+  --color-accent: #b0c4de; // Light Steel Blue
+  --color-text-dark: #e0e0e0; // Light Gray for text
+  --color-text-light: #2c3e50; // Dark Blue for light text areas
+  --color-background-light: #2c3e50; // Dark Blue background
+  --color-background-dark: #1a242f; // Even darker blue
   --color-button-bg: var(--color-secondary);
   --color-button-text: var(--color-text-light);
-  --color-border: #5A6A7A; // Darker border
+  --color-border: #5a6a7a; // Darker border
 }
 
 // Base Body Styles
 body {
-  font-family: 'Noto Sans KR', 'Pretendard', sans-serif; // Prioritize Pretendard if available, then Noto Sans KR
+  font-family:
+    'Noto Sans KR', 'Pretendard', sans-serif; // Prioritize Pretendard if available, then Noto Sans KR
   color: var(--color-text-dark);
   background-color: var(--color-background-light);
   line-height: 1.6;

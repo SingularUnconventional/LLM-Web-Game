@@ -5,7 +5,8 @@
   text-align: center;
 }
 
-.loading, .emptyMessage {
+.loading,
+.emptyMessage {
   font-size: 1.5rem;
   color: #555;
   padding: 4rem;

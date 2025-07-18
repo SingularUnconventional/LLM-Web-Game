@@ -13,10 +13,11 @@ const FinalPersonaPage: React.FC = () => {
     if (!id) return;
     const fetchPersona = async () => {
       try {
-        const fetchedPersona: ICharacter = await api.character.getCharacterById(id);
+        const fetchedPersona: ICharacter =
+          await api.character.getCharacterById(id);
         setPersona(fetchedPersona);
       } catch (error) {
-        console.error("Failed to fetch final persona:", error);
+        console.error('Failed to fetch final persona:', error);
       } finally {
         setIsLoading(false);
       }
@@ -29,14 +30,20 @@ const FinalPersonaPage: React.FC = () => {
   }
 
   if (!persona) {
-    return <div className={styles.error}>페르소나 정보를 불러올 수 없습니다.</div>;
+    return (
+      <div className={styles.error}>페르소나 정보를 불러올 수 없습니다.</div>
+    );
   }
 
   return (
     <div className={styles.container}>
       <div className={styles.personaCard}>
         <h1 className={styles.title}>진정한 페르소나</h1>
-        <img src={persona.originalImageUrl} alt={persona.name} className={styles.image} />
+        <img
+          src={persona.originalImageUrl}
+          alt={persona.name}
+          className={styles.image}
+        />
         <h2 className={styles.name}>{persona.name}</h2>
         <p className={styles.description}>{persona.description}</p>
         <div className={styles.section}>
@@ -49,9 +56,13 @@ const FinalPersonaPage: React.FC = () => {
         </div>
         <div className={styles.section}>
           <h3>첫 마디</h3>
-          <blockquote className={styles.dialogue}>"{persona.initialDialogue}"</blockquote>
+          <blockquote className={styles.dialogue}>
+            "{persona.initialDialogue}"
+          </blockquote>
         </div>
-        <Link to="/dashboard" className={styles.homeButton}>홈으로 돌아가기</Link>
+        <Link to="/dashboard" className={styles.homeButton}>
+          홈으로 돌아가기
+        </Link>
       </div>
     </div>
   );

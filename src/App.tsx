@@ -1,73 +1,69 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { AuthProvider, AuthContext } from './contexts/AuthContext';
+import React, { useContext } from 'react';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+} from 'react-router-dom';
+import { AuthProvider, AuthContext, useAuth } from './contexts/AuthContext';
 import { GameProvider } from './contexts/GameContext';
-import { useContext } from 'react';
-
-
-// Layout
-import MainLayout from './components/layout/MainLayout';
 
 // Pages
 import HomePage from './pages/HomePage';
 import AuthPage from './pages/AuthPage';
-import Dashboard from './pages/Dashboard';
 import GamePlayPage from './pages/GamePlayPage';
-import InitialCounselingPage from './pages/InitialCounselingPage';
-import PersonaCollectionPage from './pages/PersonaCollectionPage';
-import EmotionLogPage from './pages/EmotionLogPage';
-import FinalPersonaPage from './pages/FinalPersonaPage';
 import PsychologyTestPage from './pages/PsychologyTestPage';
-import CharacterSelectionPage from './pages/CharacterSelectionPage';
-import CounselingPage from './pages/CounselingPage';
+// import EndingPage from './pages/EndingPage'; // 엔딩 페이지는 필요시 추가
 
-// Wrapper for protected routes
-const ProtectedRoute = () => {
-  const auth = useContext(AuthContext);
+// 보호된 라우트 Wrapper
+const ProtectedRoute: React.FC = () => {
+  const { isAuthenticated, isLoading } = useAuth();
 
-  // AuthContext handles isLoading, so we just check for user
-  return auth?.user ? <MainLayout><Outlet /></MainLayout> : <Navigate to="/auth" />;
+  if (isLoading) {
+    return <div>Loading...</div>; // 인증 상태 확인 중 로딩 표시
+  }
+
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
 };
 
-// Wrapper for public routes (redirects if logged in)
-const PublicRoute = () => {
-  const auth = useContext(AuthContext);
+// 공개 라우트 Wrapper (로그인 시 홈으로 리디렉션)
+const PublicRoute: React.FC = () => {
+  const { isAuthenticated, isLoading } = useAuth();
 
-  // AuthContext handles isLoading, so we just check for user
-  return auth?.user ? <Navigate to="/dashboard" /> : <Outlet />;
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  return isAuthenticated ? <Navigate to="/" replace /> : <Outlet />;
 };
 
 
 function App() {
   return (
-    <Router>
-      <AuthProvider>
-        <GameProvider>
+    <AuthProvider>
+      <GameProvider>
+        <Router>
           <Routes>
-            {/* Public routes that redirect if logged in */}
+            {/* 로그인/회원가입 페이지만 있는 공개 라우트 */}
             <Route element={<PublicRoute />}>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/auth" element={<AuthPage />} />
+              <Route path="/login" element={<AuthPage />} />
             </Route>
 
-            {/* Protected routes */}
+            {/* 로그인이 필요한 보호된 라우트 */}
             <Route element={<ProtectedRoute />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/character-selection" element={<CharacterSelectionPage />} />
-              <Route path="/initial-counseling" element={<InitialCounselingPage />} />
-              <Route path="/play" element={<GamePlayPage />} />
-              <Route path="/persona-collection" element={<PersonaCollectionPage />} />
-              <Route path="/emotion-log" element={<EmotionLogPage />} />
-              <Route path="/persona/:id" element={<FinalPersonaPage />} />
+              <Route path="/" element={<HomePage />} />
               <Route path="/psychology-test" element={<PsychologyTestPage />} />
-              <Route path="/counseling" element={<CounselingPage />} />
+              <Route path="/character/:characterId" element={<GamePlayPage />} />
+              {/* <Route path="/ending/:characterId" element={<EndingPage />} /> */}
             </Route>
-            
-            {/* Fallback route */}
+
+            {/* 일치하는 라우트가 없을 경우 */}
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
-        </GameProvider>
-      </AuthProvider>
-    </Router>
+        </Router>
+      </GameProvider>
+    </AuthProvider>
   );
 }
 

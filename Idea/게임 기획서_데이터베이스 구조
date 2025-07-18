@@ -1,0 +1,85 @@
+게임 기획서_데이터베이스 구조
+문서 버전: 1.1
+작성일: 2025년 7월 18일
+게임 모델 (User, Character, ConversationLog 등)의 상세 정의
+5.1. 개요
+본 게임의 데이터는 사용자 정보, 캐릭터 데이터, 대화 기록, 게임 상태 등을 관리하는 여러 모델로 구성된다.
+각 모델은 명확한 목적을 가지며, Foreign Key를 통해 상호 관계를 맺어 데이터의 정합성과 확장성을 보장한다.
+5.2. User (사용자 모델)
+설명 : 사용자의 계정 정보와 게임 전체에 걸친 진행 상황, 그리고 AI가 분석한 사용자 성향 데이터를 저장하는 핵심 모델.
+
+필드명            타입               설명
+----------------------------------------------------------------------------------------------------
+_id              ObjectId           고유 식별자 (Primary Key).
+email            String             사용자의 로그인 이메일 주소.
+password         String             해시 처리된 사용자 비밀번호.
+playerAnalysis   JSON               "[AI-2] 와 [AI-6] 에 의해 생성 및 갱신되는 사용자 성향 분석 데이터. 초기값은 null."
+completedCharacterCount Number      사용자가 클리어한 캐릭터의 수. 9가 되면 최종 페르소나 생성 조건이 충족된다.
+createdAt        Date               계정 생성 일시.
+
+5.3. Character (캐릭터 모델)
+설명 : 고정 캐릭터 및 AI에 의해 생성된 모든 캐릭터의 상세 정보를 저장하는 모델.
+
+필드명             타입                 설명
+----------------------------------------------------------------------------------------------------
+_id               ObjectId             고유 식별자 (Primary Key).
+userId            ForeignKey (User)    해당 캐릭터가 배정된 사용자의 ID.
+name              String               캐릭터의 이름.
+description       String               캐릭터의 배경 이야기 및 설명.
+problem           String               캐릭터가 가진 핵심적인 내면의 고민.
+personality       String               캐릭터의 성격.
+initialDialogue   String               캐릭터가 등장하며 처음 건네는 대사.
+originalImageUrl  String               "[AI-8] 이 생성한 원본 프로필 이미지의 URL."
+pixelatedImageUrl String               원본 이미지를 도트 스타일로 변환한 후의 이미지 URL.
+emotionState      String               "[AI-3] 가 관리하는 캐릭터의 현재 감정 상태 (예: '불안', '차분')."
+memories          JSON Array           "[MEMORIZE{...}] 명령어로 생성된 캐릭터의 기억 목록. 이후 대화 프롬프트에 활용된다."
+isFixed           Boolean              '번데기가 되기 싫은 애벌레'와 같은 고정 캐릭터인지 여부.
+isFinalPersona    Boolean              9명의 캐릭터 클리어 후 생성되는 최종 페르소나인지 여부.
+createdAt         Date                 캐릭터 생성 일시.
+
+5.4. ConversationLog (대화 로그 모델)
+설명 : 특정 캐릭터와 플레이어 간에 오간 모든 대화를 순서대로 기록하는 모델.
+
+필드명           타입                        설명
+----------------------------------------------------------------------------------------------------
+_id             ObjectId                    고유 식별자 (Primary Key).
+characterId     ForeignKey (Character)      대화가 속한 캐릭터의 ID.
+speaker         Enum ('user', 'character')  메시지를 발신한 주체.
+message         String                      메시지의 내용.
+timestamp       Date                        메시지가 기록된 시간.
+
+5.5. CharacterCard (캐릭터 카드 모델)
+설명 : 플레이어가 클리어한 캐릭터의 최종 기록을 담고 있는 수집품 모델. '감정의 서재'에서 조회된다.
+
+필드명           타입                       설명
+----------------------------------------------------------------------------------------------------
+_id             ObjectId                   고유 식별자 (Primary Key).
+userId          ForeignKey (User)          카드를 획득한 사용자의 ID.
+characterId     ForeignKey (Character)     카드의 대상이 되는 캐릭터의 ID.
+summary         String                     "[AI-4] 가 생성한 캐릭터 서사의 최종 요약문."
+emotionShard    String                     "[AI-5] 가 추출한 핵심 감정 키워드."
+imageUrl        String                     캐릭터의 pixelatedImageUrl.
+createdAt       Date                       카드가 생성된 일시.
+
+5.6. CounselingLog (최초 상담 로그 모델)
+설명 : 회원가입 직후 [AI-1] 과 진행한 최초 상담 내용만을 별도로 기록하는 모델.
+
+필드명           타입                     설명
+----------------------------------------------------------------------------------------------------
+_id             ObjectId                 고유 식별자 (Primary Key).
+userId          ForeignKey (User)        상담을 진행한 사용자의 ID.
+speaker         Enum ('user', 'ai')      메시지 발신 주체.
+message         String                   메시지의 내용.
+timestamp       Date                     메시지가 기록된 시간.
+
+5.7. GameState (게임 상태 모델)
+설명 : 사용자의 현재 게임 진행 상태(낮/밤, 진행 중인 캐릭터 등)를 관리하여 세션 복원을 돕는 모델.
+
+필드명             타입                     설명
+----------------------------------------------------------------------------------------------------
+_id               ObjectId                 고유 식별자 (Primary Key).
+userId            ForeignKey (User)        게임 상태의 소유자인 사용자 ID.
+activeCharacterId ForeignKey (Character)   현재 상호작용 중인 캐릭터의 ID.
+currentDay        Number                   "현재 진행 중인 게임 내 날짜. (예: 1, 2, 3)"
+gameState         Enum ('night', 'day', 'cleared') 현재 게임의 주기 상태.
+lastInteractionTime Date                   마지막 상호작용 시간. '낮' 상태의 1시간 대기 시간을 계산하는 기준점.

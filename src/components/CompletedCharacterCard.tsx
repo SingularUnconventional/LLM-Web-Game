@@ -7,7 +7,9 @@ interface CompletedCharacterCardProps {
   card: ICharacterCard;
 }
 
-const CompletedCharacterCard: React.FC<CompletedCharacterCardProps> = ({ card }) => {
+const CompletedCharacterCard: React.FC<CompletedCharacterCardProps> = ({
+  card,
+}) => {
   const [character, setCharacter] = useState<ICharacter | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -17,7 +19,7 @@ const CompletedCharacterCard: React.FC<CompletedCharacterCardProps> = ({ card })
         const charData = await api.character.getCharacterById(card.characterId);
         setCharacter(charData);
       } catch (error) {
-        console.error("Failed to fetch character details for card:", error);
+        console.error('Failed to fetch character details for card:', error);
       } finally {
         setIsLoading(false);
       }
@@ -36,7 +38,14 @@ const CompletedCharacterCard: React.FC<CompletedCharacterCardProps> = ({ card })
   return (
     <div className={styles.card}>
       <div className={styles.imageContainer}>
-        <img src={character.pixelatedImageUrl || '/placeholders/default_character_image.png'} alt={character.name} className={styles.image} />
+        <img
+          src={
+            character.pixelatedImageUrl ||
+            '/placeholders/default_character_image.png'
+          }
+          alt={character.name}
+          className={styles.image}
+        />
       </div>
       <div className={styles.content}>
         <h3 className={styles.name}>{character.name}</h3>

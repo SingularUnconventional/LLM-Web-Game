@@ -38,7 +38,8 @@
   padding-bottom: 5px;
 }
 
-.infoSection p, .infoSection li {
+.infoSection p,
+.infoSection li {
   font-size: 0.95rem;
   color: #e0e0e0;
   line-height: 1.6;

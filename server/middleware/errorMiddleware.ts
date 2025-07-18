@@ -4,7 +4,12 @@ interface AppError extends Error {
   statusCode?: number;
 }
 
-const errorHandler = (err: AppError, req: Request, res: Response, next: NextFunction) => {
+const errorHandler = (
+  err: AppError,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const statusCode = err.statusCode || 500;
 
   console.error({

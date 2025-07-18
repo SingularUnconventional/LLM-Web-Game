@@ -1,63 +1,41 @@
 import fs from 'fs/promises';
 import path from 'path';
 
-class PromptService {
-  private promptTemplates: Map<string, string> = new Map();
-  private coreTemplate: string = '';
-  private readonly PROMPT_DIR = path.join(__dirname, '..', 'prompts');
-  private readonly CORE_TEMPLATE_NAME = 'ai_core_prompt_template';
+const PROMPT_DIR = path.join(__dirname, '..', 'prompts');
 
-  constructor() {
-    this.loadAllPrompts();
-  }
+/**
+ * 지정된 이름의 프롬프트 파일 내용을 읽고, 주어진 데이터로 플레이스홀더를 채웁니다.
+ * @param templateName - .txt 확장자를 제외한 프롬프트 파일 이름 (e.g., '1_initial_counseling')
+ * @param data - 프롬프트의 {{placeholder}}를 대체할 데이터 객체
+ * @returns 내용이 채워진 프롬프트 문자열
+ */
+export async function getPrompt(
+  templateName: string,
+  data: Record<string, any> = {}
+): Promise<string> {
+  const filePath = path.join(PROMPT_DIR, `${templateName}.txt`);
 
-  private async loadAllPrompts() {
-    try {
-      const files = await fs.readdir(this.PROMPT_DIR);
-      for (const file of files) {
-        if (file.endsWith('.txt')) {
-          const filePath = path.join(this.PROMPT_DIR, file);
-          const content = await fs.readFile(filePath, 'utf-8');
-          const templateName = file.replace('.txt', '');
-          this.promptTemplates.set(templateName, content);
-        }
-      }
-      this.coreTemplate = this.promptTemplates.get(this.CORE_TEMPLATE_NAME) || '';
-      if (!this.coreTemplate) {
-        console.error('!!! CRITICAL: AI Core Prompt Template not found !!!');
-      }
-      console.log('[PromptService] All prompt templates loaded successfully.');
-    } catch (error) {
-      console.error('Error loading prompt templates:', error);
-      throw error; // Rethrow to indicate a critical failure on startup
-    }
-  }
+  try {
+    const template = await fs.readFile(filePath, 'utf-8');
 
-  public getPrompt(templateName: string, data: Record<string, any> = {}): string {
-    let template = this.promptTemplates.get(templateName);
-
-    if (!template) {
-      throw new Error(`Prompt template '${templateName}' not found.`);
-    }
-
-    // Inject the core template into other templates
-    if (templateName !== this.CORE_TEMPLATE_NAME) {
-      template = template.replace('{{ai_core_prompt_template}}', this.coreTemplate);
-    }
-
-    // Replace all other placeholders
-    return template.replace(/{{(.*?)}}/g, (match, key) => {
+    // 템플릿의 {{key}} 플레이스홀더를 data 객체의 값으로 대체
+    const filledPrompt = template.replace(/{{(.*?)}}/g, (match, key) => {
       const value = data[key.trim()];
       if (value === undefined || value === null) {
-        return match; // Keep the placeholder if data is not available
+        console.warn(`[getPrompt] '${templateName}' 템플릿의 키 '${key.trim()}'에 해당하는 데이터가 없습니다.`);
+        return match; // 데이터��� 없으면 플레이스홀더 유지
       }
-      // If the value is an object, stringify it
+      // 객체나 배열이면 JSON 문자열로 변환
       if (typeof value === 'object') {
         return JSON.stringify(value, null, 2);
       }
       return String(value);
     });
+
+    return filledPrompt;
+  } catch (error) {
+    console.error(`'${templateName}' 프롬프트를 로드하는 중 오류 발생:`, error);
+    throw new Error(`Prompt template '${templateName}' not found or could not be read.`);
   }
 }
 
-export default new PromptService();

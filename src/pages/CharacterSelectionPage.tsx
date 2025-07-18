@@ -23,8 +23,8 @@ const CharacterSelectionPage: React.FC = () => {
           setCharacters(newChars as ICharacter[]);
         }
       } catch (error) {
-        console.error("Failed to fetch or generate characters:", error);
-        alert("캐릭터를 불러오는 데 실패했습니다. 대시보드로 돌아갑니다.");
+        console.error('Failed to fetch or generate characters:', error);
+        alert('캐릭터를 불러오는 데 실패했습니다. 대시보드로 돌아갑니다.');
         navigate('/dashboard');
       } finally {
         setIsLoading(false);
@@ -38,8 +38,8 @@ const CharacterSelectionPage: React.FC = () => {
       await api.character.selectCharacter(characterId);
       navigate('/play');
     } catch (error) {
-      console.error("Failed to select character:", error);
-      alert("캐릭터 선택에 실패했습니다.");
+      console.error('Failed to select character:', error);
+      alert('캐릭터 선택에 실패했습니다.');
     }
   };
 
@@ -50,7 +50,10 @@ const CharacterSelectionPage: React.FC = () => {
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>마음의 조각들</h1>
-      <p className={styles.subtitle}>당신의 마음 속에서 태어난 페르소나들입니다. 대화를 나누고 싶은 페르소나를 선택하세요.</p>
+      <p className={styles.subtitle}>
+        당신의 마음 속에서 태어난 페르소나들입니다. 대화를 나누고 싶은
+        페르소나를 선택하세요.
+      </p>
       <div className={styles.cardGrid}>
         {characters.map((char) => (
           <div key={char._id} onClick={() => handleSelectCharacter(char._id)}>

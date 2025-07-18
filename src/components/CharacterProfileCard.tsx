@@ -6,7 +6,9 @@ interface CharacterProfileCardProps {
   character: ICharacter;
 }
 
-const CharacterProfileCard: React.FC<CharacterProfileCardProps> = ({ character }) => {
+const CharacterProfileCard: React.FC<CharacterProfileCardProps> = ({
+  character,
+}) => {
   return (
     <div className={styles.profileCard}>
       <div className={styles.header}>
@@ -31,7 +33,14 @@ const CharacterProfileCard: React.FC<CharacterProfileCardProps> = ({ character }
       </div>
 
       <div className={styles.imageContainer}>
-        <img src={character.pixelatedImageUrl || '/placeholders/default_character_image.png'} alt={character.name} className={styles.image} />
+        <img
+          src={
+            character.pixelatedImageUrl ||
+            '/placeholders/default_character_image.png'
+          }
+          alt={character.name}
+          className={styles.image}
+        />
       </div>
     </div>
   );

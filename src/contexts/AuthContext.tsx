@@ -1,69 +1,97 @@
-import React, { createContext, useState, useEffect, ReactNode, useCallback, useContext } from 'react';
-import { api } from '../utils/api';
-import { User } from '../types/api';
-
-interface RegisterCredentials {
-  username: string;
-  email: string;
-  password: string;
-}
-
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
+import React, {
+  createContext,
+  useState,
+  useEffect,
+  useCallback,
+  useContext,
+  ReactNode,
+} from 'react';
+import * as api from '../utils/api';
+import { IUser, RegisterData, LoginData } from '../types/api';
 
 interface AuthContextType {
-  user: User | null;
+  user: IUser | null;
+  isAuthenticated: boolean;
   isLoading: boolean;
-  register: (credentials: RegisterCredentials) => Promise<void>;
-  login: (credentials: LoginCredentials) => Promise<void>;
+  register: (data: RegisterData) => Promise<void>;
+  login: (data: LoginData) => Promise<void>;
   logout: () => void;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<IUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
-      }
-    } catch (error) {
-      console.error("Failed to parse user from localStorage", error);
-      localStorage.removeItem('user');
+  const verifyAuth = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setIsLoading(false);
+      return;
     }
-    setIsLoading(false);
+    try {
+      const { data: userData } = await api.getMe();
+      setUser(userData);
+    } catch (error) {
+      console.error('Authentication check failed:', error);
+      localStorage.removeItem('token');
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
-  const handleAuthResponse = (userData: any) => {
-    const userWithToken = { id: userData.id, username: userData.username, email: userData.email, token: userData.token };
-    localStorage.setItem('user', JSON.stringify(userWithToken));
-    setUser(userWithToken);
+  useEffect(() => {
+    verifyAuth();
+  }, [verifyAuth]);
+
+  const handleAuthSuccess = (userData: IUser) => {
+    if (userData.token) {
+      localStorage.setItem('token', userData.token);
+      // 토큰을 제외한 사용자 정보를 상태에 저장
+      const { token, ...userToStore } = userData;
+      setUser(userToStore as IUser);
+    }
   };
 
-  const register = useCallback(async ({ username, email, password }: RegisterCredentials) => {
-    const userData = await api.auth.register(username, email, password);
-    handleAuthResponse(userData);
-  }, []);
+  const register = async (data: RegisterData) => {
+    try {
+      const response = await api.register(data);
+      handleAuthSuccess(response.data);
+    } catch (error) {
+      console.error('Registration failed:', error);
+      throw error; // 에러를 다시 던져서 UI에서 처리할 수 있도록 함
+    }
+  };
 
-  const login = useCallback(async ({ email, password }: LoginCredentials) => {
-    const userData = await api.auth.login(email, password);
-    handleAuthResponse(userData);
-  }, []);
+  const login = async (data: LoginData) => {
+    try {
+      const response = await api.login(data);
+      handleAuthSuccess(response.data);
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error;
+    }
+  };
 
-  const logout = useCallback(() => {
-    localStorage.removeItem('user');
+  const logout = () => {
+    localStorage.removeItem('token');
     setUser(null);
-  }, []);
+  };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, register, login, logout }}>
-      {isLoading ? <div>Loading authentication...</div> : children}
+    <AuthContext.Provider
+      value={{
+        user,
+        isAuthenticated: !!user,
+        isLoading,
+        register,
+        login,
+        logout,
+      }}
+    >
+      {children}
     </AuthContext.Provider>
   );
 };

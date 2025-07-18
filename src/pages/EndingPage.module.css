@@ -6,7 +6,11 @@
   width: 100%;
   height: 100%;
   padding: 20px;
-  background: linear-gradient(160deg, var(--color-secondary) 0%, var(--color-primary) 100%);
+  background: linear-gradient(
+    160deg,
+    var(--color-secondary) 0%,
+    var(--color-primary) 100%
+  );
   color: var(--color-text-light);
   text-align: center;
 }
@@ -36,7 +40,7 @@
 }
 
 .ending-page-container button:hover {
-  background-color: #E0FF99; /* Slightly brighter yellow */
+  background-color: #e0ff99; /* Slightly brighter yellow */
   transform: translateY(-5px) scale(1.02);
   box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
 }

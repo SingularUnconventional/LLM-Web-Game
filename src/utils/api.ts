@@ -1,101 +1,63 @@
-import { ICharacter, Message, GameStartResponse, InitialCounselingSubmitResponse, ConversationEndResult, ICharacterCard, PsychologyTestResponse, ApiType } from '../types/api';
+import axios from 'axios';
+import { LoginData, RegisterData } from '../types/auth';
 
-interface RequestOptions extends RequestInit {
-  // You can add custom options here if needed
-}
+const API_URL = '/api';
 
-// Function to get the token from localStorage
-const getToken = (): string | null => {
-  const userString = localStorage.getItem('user');
-  if (userString) {
-    const user = JSON.parse(userString);
-    return user.token || null;
-  }
-  return null;
-};
-
-async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-  const API_BASE_URL = '/api';
-  const url = `${API_BASE_URL}${endpoint}`;
-  const token = getToken();
-
-  const headers: HeadersInit = {
+const api = axios.create({
+  baseURL: API_URL,
+  headers: {
     'Content-Type': 'application/json',
-    ...options.headers,
-  };
+  },
+});
 
+// 요청 인터셉터를 사용하여 모든 요청에 JWT 토큰을 추가합니다.
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
   if (token) {
-    (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
+    config.headers.Authorization = `Bearer ${token}`;
   }
+  return config;
+});
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+// --- Auth ---
+export const register = (data: RegisterData) => api.post('/auth/register', data);
+export const login = (data: LoginData) => api.post('/auth/login', data);
+export const getMe = () => api.get('/auth/me');
 
-  if (!response.ok) {
-    let errorData;
-    try {
-      errorData = await response.json();
-    } catch (e) {
-      throw new Error(`Request failed with status ${response.status}`);
-    }
-    throw new Error(errorData?.message || `Request failed with status ${response.status}`);
-  }
+// --- Game ---
+/**
+ * 심리 테스트 결과로 게임을 시작합니다.
+ * @param testResult - 심리 테스트 결과 문자열
+ */
+export const startGame = (testResult: string) =>
+  api.post('/game/start', { testResult });
 
-  const contentType = response.headers.get('content-type');
-  if (contentType && contentType.includes('application/json')) {
-    return response.json() as Promise<T>;
-  }
-  return Promise.resolve(null as T);
-}
+/**
+ * 캐릭터와 대화 턴을 진행합니다.
+ * @param characterId - 현재 캐릭터의 ID
+ * @param message - 사용자의 메시지
+ */
+export const handleTurn = (characterId: string, message: string) =>
+  api.post(`/game/${characterId}/turn`, { message });
 
-const get = <T>(endpoint: string): Promise<T> => request<T>(endpoint);
-const post = <T>(endpoint: string, body: any): Promise<T> =>
-  request<T>(endpoint, { method: 'POST', body: JSON.stringify(body) });
-const put = <T>(endpoint: string, body: any): Promise<T> =>
-  request<T>(endpoint, { method: 'PUT', body: JSON.stringify(body) });
-const del = <T>(endpoint: string): Promise<T> =>
-  request<T>(endpoint, { method: 'DELETE' });
+// --- Character ---
+/**
+ * 사용자의 캐릭터 목록을 가져옵니다.
+ * @param status - 'ongoing' | 'completed' (선택 사항)
+ */
+export const getAllCharacters = (status?: 'ongoing' | 'completed') =>
+  api.get('/character', { params: { status } });
 
-export const api: ApiType = {
-  auth: {
-    register: (username: string, email: string, password: string) => post('/auth/register', { username, email, password }),
-    login: (email: string, password: string) => post('/auth/login', { email, password }),
-  },
-  game: {
-    startGame: () => get<GameStartResponse>('/game/start'),
-    submitInitialCounseling: (log: any) => post('/game/initial-counseling', { log }),
-    postChatMessage: (message: string) => post('/game/chat', { message }),
-    endCharacterStory: () => post('/game/end-story', {}),
-    skipToMorning: () => post('/game/skip-morning', {}),
-    skipToNight: () => post('/game/skip-night', {}),
-    startPsychologyPhase: () => post('/game/start-psychology', {}),
-  },
-  counseling: {
-    getHistory: () => get<Message[]>('/counseling/history'),
-    postMessage: (message: string) => post<{ message: string }>('/counseling/message', { message }),
-    postInitialChatMessage: (messages: any) => post('/counseling/initial-chat', { messages }),
-    submitInitialCounseling: (messages: any) => post<InitialCounselingSubmitResponse>('/counseling/initial', { messages }),
-  },
-  character: {
-    generateInitialCharacters: () => post('/character/initial', {}),
-    selectCharacter: (characterId: string) => post('/character/select', { characterId }),
-    postMessage: (message: string) => post('/character/message', { message }),
-    endConversation: () => post<ConversationEndResult>('/character/end-conversation', {}),
-    getActiveCharacter: () => get('/character/current'),
-    getHistory: () => get('/character/history'),
-    getCards: () => get<ICharacterCard[]>('/character/cards'),
-    getUnselected: () => get<ICharacter[]>('/character/unselected'),
-    getCharacterById: (id: string) => get<ICharacter>(`/character/${id}`),
-    getEmotionPieces: () => get('/character/emotion-pieces'),
-    finalizePersona: () => post('/character/finalize-persona', {}),
-  },
-  psychology: {
-    submitAnswers: (answers: any[]) => post<PsychologyTestResponse>('/psychology/answers', { answers }),
-  },
-  get,
-  post,
-  put,
-  delete: del,
-};
+/**
+ * 특정 캐릭터의 상세 정보와 대화 기록을 가져옵니다.
+ * @param characterId - 캐릭터의 ID
+ */
+export const getCharacterDetails = (characterId: string) =>
+  api.get(`/character/${characterId}`);
+
+/**
+ * 새로운 캐릭터를 생성합니다.
+ */
+export const createNewCharacter = () => api.post('/character');
+
+export default api;

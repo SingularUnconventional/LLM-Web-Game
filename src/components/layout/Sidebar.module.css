@@ -11,11 +11,14 @@
   padding: 20px;
   flex-shrink: 0;
   transform: translateX(-100%); /* Hidden by default */
-  transition: transform 0.3s ease-in-out, background 0.5s ease, border-color 0.5s ease; /* Smooth transition */
+  transition:
+    transform 0.3s ease-in-out,
+    background 0.5s ease,
+    border-color 0.5s ease; /* Smooth transition */
   z-index: 1000; /* Ensure it's above other content */
 }
 
-.sidebar[data-open="true"] {
+.sidebar[data-open='true'] {
   transform: translateX(0); /* Show when open */
 }
 

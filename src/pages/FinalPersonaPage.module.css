@@ -7,7 +7,8 @@
   background: linear-gradient(to top, #cfd9df 0%, #e2ebf0 100%);
 }
 
-.loading, .error {
+.loading,
+.error {
   font-size: 1.5rem;
   color: #555;
   padding: 4rem;
@@ -18,7 +19,7 @@
   background: white;
   padding: 3rem;
   border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   max-width: 800px;
   width: 100%;
   text-align: center;
@@ -40,7 +41,7 @@
   margin: 0 auto 1.5rem auto;
   object-fit: cover;
   border: 5px solid #fff;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .name {

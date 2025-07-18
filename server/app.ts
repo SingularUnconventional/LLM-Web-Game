@@ -10,8 +10,6 @@ import errorHandler from './middleware/errorMiddleware';
 import authRoutes from './routes/auth';
 import gameRoutes from './routes/game';
 import characterRoutes from './routes/character';
-import counselingRoutes from './routes/counseling';
-import psychologyRoutes from './routes/psychology';
 
 connectDB();
 
@@ -26,8 +24,6 @@ app.use(cors());
 app.use('/api/auth', authRoutes);
 app.use('/api/game', gameRoutes);
 app.use('/api/character', characterRoutes);
-app.use('/api/counseling', counselingRoutes);
-app.use('/api/psychology', psychologyRoutes);
 
 app.get('/api', (req, res) => {
   res.send('Hello from the server!');

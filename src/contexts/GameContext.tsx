@@ -1,84 +1,151 @@
-import React, { createContext, useContext, useReducer, ReactNode, Dispatch } from 'react';
-import { GameSessionData, CharacterPersona, DialogueEntry } from '../types/api';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useCallback,
+  ReactNode,
+  useEffect,
+} from 'react';
+import * as api from '../utils/api';
+import { ICharacter, ICounselingLog, IEnding, CharacterDetailsResponse, HandleTurnResponse } from '../types/api';
+import { useAuth } from './AuthContext';
 
-// --- Reducer Actions ---
-type Action =
-  | { type: 'SET_SESSION'; payload: GameSessionData | null }
-  | { type: 'ADD_DIALOGUE_ENTRY'; payload: DialogueEntry }
-  | { type: 'UPDATE_EMOTION'; payload: string }
-  | { type: 'UPDATE_CONVERSATION_STATUS'; payload: { isResolved: boolean } }
-  | { type: 'SET_TIME_OF_DAY'; payload: 'day' | 'night' }; // Added for Day/Night theme
-
-// --- Reducer Function ---
-const gameReducer = (state: GameSessionData | null, action: Action): GameSessionData | null => {
-  switch (action.type) {
-    case 'SET_SESSION':
-      return action.payload;
-    case 'ADD_DIALOGUE_ENTRY':
-      if (!state) return null;
-      return {
-        ...state,
-        dialogueHistory: [...state.dialogueHistory, action.payload],
-      };
-    case 'UPDATE_EMOTION':
-      if (!state) return null;
-      return {
-        ...state,
-        characterEmotionProgress: {
-          ...state.characterEmotionProgress,
-          currentEmotionState: action.payload,
-        },
-      };
-    case 'UPDATE_CONVERSATION_STATUS':
-      if (!state) return null;
-      return {
-        ...state,
-        isResolved: action.payload.isResolved,
-      };
-    case 'SET_TIME_OF_DAY':
-      if (!state) return null;
-      return {
-        ...state,
-        timeOfDay: action.payload,
-      };
-    default:
-      return state;
-  }
-};
-
-// --- Context Definition ---
 interface GameContextType {
-  gameSession: GameSessionData | null;
-  dispatch: Dispatch<Action>;
+  characters: ICharacter[];
+  activeCharacter: ICharacter | null;
+  counselingHistory: ICounselingLog[];
+  isLoading: boolean;
+  error: string | null;
+  fetchCharacters: () => Promise<void>;
+  selectCharacter: (characterId: string) => Promise<void>;
+  startGame: (testResult: string) => Promise<void>;
+  sendMessage: (message: string) => Promise<void>;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
-// --- Provider Component ---
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [gameSession, dispatch] = useReducer(gameReducer, null);
+  const { isAuthenticated } = useAuth();
+  const [characters, setCharacters] = useState<ICharacter[]>([]);
+  const [activeCharacter, setActiveCharacter] = useState<ICharacter | null>(null);
+  const [counselingHistory, setCounselingHistory] = useState<ICounselingLog[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Initial state for timeOfDay. This should ideally come from the backend GameState.
-  // For now, we'll set a default and expect it to be updated by backend data.
-  React.useEffect(() => {
-    if (!gameSession) {
-      dispatch({ type: 'SET_SESSION', payload: { 
-        _id: '', userId: '', characterName: '', characterCreationTime: new Date(), 
-        characterImageContentId: '', characterPersona: {} as CharacterPersona, 
-        dialogueHistory: [], characterEmotionProgress: { currentEmotionState: '' }, 
-        isResolved: false, timeOfDay: 'day', currentPhase: '' // Default to day
-      } as GameSessionData });
+  const handleApiCall = async <T,>(apiCall: () => Promise<T>) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      return await apiCall();
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message || err.message || 'An unknown error occurred';
+      setError(errorMessage);
+      console.error(errorMessage);
+      throw err;
+    } finally {
+      setIsLoading(false);
     }
-  }, [gameSession]);
+  };
+
+  const fetchCharacters = useCallback(async () => {
+    await handleApiCall(async () => {
+      const { data } = await api.getAllCharacters();
+      setCharacters(data);
+    });
+  }, []);
+
+  const selectCharacter = useCallback(async (characterId: string) => {
+    await handleApiCall(async () => {
+      const { data } = await api.getCharacterDetails(characterId);
+      setActiveCharacter(data.character);
+      setCounselingHistory(data.counselingHistory);
+    });
+  }, []);
+
+  const startGame = useCallback(async (testResult: string) => {
+    await handleApiCall(async () => {
+      const { data } = await api.startGame(testResult);
+      // 게임 시작 후 캐릭�� 목록을 다시 불러와서 UI를 업데이트합니다.
+      await fetchCharacters();
+      // 새로 생성된 캐릭터를 활성 캐릭터로 설정할 수도 있습니다.
+      if (data.character) {
+        await selectCharacter(data.character._id);
+      }
+    });
+  }, [fetchCharacters, selectCharacter]);
+
+  const sendMessage = useCallback(async (message: string) => {
+    if (!activeCharacter) {
+      setError('No active character selected.');
+      return;
+    }
+
+    // 낙관적 업데이트: 사용자의 메시지를 즉시 UI에 반영
+    const userLog: ICounselingLog = {
+      _id: `temp-${Date.now()}`,
+      characterId: activeCharacter._id,
+      turn: counselingHistory.length + 1,
+      userMessage: message,
+      aiMessage: '...', // AI가 응답을 생성 중임을 표시
+      emotionKeyword: '',
+      createdAt: new Date().toISOString(),
+    };
+    setCounselingHistory(prev => [...prev, userLog]);
+
+    await handleApiCall(async () => {
+      const { data } = await api.handleTurn(activeCharacter._id, message);
+      
+      // 서버 응답으로 실제 로그 업데이트
+      setCounselingHistory(prev => {
+          const newHistory = [...prev];
+          const tempLogIndex = newHistory.findIndex(log => log._id === userLog._id);
+          if (tempLogIndex !== -1) {
+              // 임시 로그를 실제 AI 응답으로 교체
+              newHistory[tempLogIndex].aiMessage = data.aiMessage || 'No response';
+              newHistory[tempLogIndex].emotionKeyword = data.emotionKeyword || '';
+          }
+          return newHistory;
+      });
+
+      if (data.isEnding && data.ending) {
+        // 엔딩 처리: UI에 엔딩을 표시하거나 다른 페이지로 이동
+        alert(`Ending Reached: ${data.ending.title}`);
+        setActiveCharacter(null); // 대화 종료
+        await fetchCharacters(); // 캐릭터 목록 업데이트 (상태 변경)
+      }
+    });
+  }, [activeCharacter, counselingHistory, fetchCharacters]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchCharacters();
+    } else {
+      // 로그아웃 시 상태 초기화
+      setCharacters([]);
+      setActiveCharacter(null);
+      setCounselingHistory([]);
+    }
+  }, [isAuthenticated, fetchCharacters]);
 
   return (
-    <GameContext.Provider value={{ gameSession, dispatch }}>
+    <GameContext.Provider
+      value={{
+        characters,
+        activeCharacter,
+        counselingHistory,
+        isLoading,
+        error,
+        fetchCharacters,
+        selectCharacter,
+        startGame,
+        sendMessage,
+      }}
+    >
       {children}
     </GameContext.Provider>
   );
 };
 
-// --- Custom Hook ---
 export const useGame = () => {
   const context = useContext(GameContext);
   if (context === undefined) {

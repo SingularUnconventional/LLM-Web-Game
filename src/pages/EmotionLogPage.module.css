@@ -5,7 +5,8 @@
   text-align: center;
 }
 
-.loading, .emptyMessage {
+.loading,
+.emptyMessage {
   font-size: 1.5rem;
   color: #555;
   padding: 4rem;
@@ -34,7 +35,7 @@
   background: #fff;
   border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   text-align: center;
   display: flex;
   flex-direction: column;
